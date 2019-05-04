@@ -157,7 +157,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		if (wrapper == null) {
 			return null;
 		}
-		if (wrapper.getType() == "AIR") {
+		if (wrapper.getType().equals("AIR")) {
 			return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
 					: PlaceholderAPIPlugin.booleanTrue();
 		}
