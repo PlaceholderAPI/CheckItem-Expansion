@@ -28,7 +28,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.1.0";
+		return "1.1.1";
 	}
 	
 	public class ItemWrapper {
@@ -40,6 +40,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkDurability;
 		private boolean checkAmount;
 		private boolean checkType;
+		private boolean isStrict;
 		private String m;
 		private short d;
 		private int a;
@@ -149,6 +150,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 		public void setCheckType(boolean checkType) {
 			this.checkType = checkType;
+		}
+		
+		public boolean isStrict() {
+			return this.isStrict;
+		}
+		
+		public void setIsStrict(boolean isStrict) {
+			this.isStrict = isStrict;
 		}
 	}
 	
@@ -275,6 +284,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					wrapper.setLore(part);
 					wrapper.setCheckLoreContains(true);
 				}
+				if(part.equalsIgnoreCase("strict")){
+					wrapper.setIsStrict(true);
+				}
 				
 			}
 			return wrapper;
@@ -323,6 +335,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			input = input.replace("nameequals:", "");
 			wrapper.setName(input);
 			wrapper.setCheckNameEquals(true);
+		}
+		if(input.equalsIgnoreCase("strict")){
+			wrapper.setIsStrict(true);
 		}
 		return wrapper;
 	}
