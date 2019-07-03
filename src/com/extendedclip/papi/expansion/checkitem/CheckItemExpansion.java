@@ -40,6 +40,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkDurability;
 		private boolean checkAmount;
 		private boolean checkType;
+		private boolean checkHand;
 		private boolean isStrict;
 		private String m;
 		private short d;
@@ -152,6 +153,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			this.checkType = checkType;
 		}
 		
+		public boolean shouldCheckHand() {
+			return this.checkHand;
+		}
+		
+		public void setCheckHand(boolean checkHand) {
+			this.checkHand = checkHand;
+		}
+		
 		public boolean isStrict() {
 			return this.isStrict;
 		}
@@ -170,66 +179,91 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
 					: PlaceholderAPIPlugin.booleanTrue();
 		}
-		
+		if (wrapper.shouldCheckHand()) {
+			try {
+				Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
+				if (checkItem(p.getInventory().getItemInMainHand(), wrapper)) {
+					return PlaceholderAPIPlugin.booleanTrue();
+				}
+				if (checkItem(p.getInventory().getItemInOffHand(), wrapper)) {
+					return PlaceholderAPIPlugin.booleanTrue();
+				}
+				return PlaceholderAPIPlugin.booleanFalse();
+			} catch (NoSuchMethodException e) {
+				if (checkItem(p.getInventory().getItemInHand(), wrapper)) {
+					return PlaceholderAPIPlugin.booleanTrue();
+				}
+				return PlaceholderAPIPlugin.booleanFalse();
+			} catch (Exception e) {
+				return PlaceholderAPIPlugin.booleanFalse();
+			}
+		}
 		ItemStack[] arrayOfItemStack;
 		int j = (arrayOfItemStack = p.getInventory().getContents()).length;
 		for (int i = 0; i < j; i++) {
 			ItemStack toCheck = arrayOfItemStack[i];
-			if (toCheck != null) {
-				if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
-					continue;
-				}
-				if (wrapper.shouldCheckDurability() && !(wrapper.getDurability() == toCheck.getDurability())) {
-					continue;
-				}
-				ItemMeta toCheckMeta = toCheck.getItemMeta();
-				if (wrapper.shouldCheckLoreContains()) {
-					if (!toCheckMeta.hasLore())
-						continue;
-					boolean loreContains = false;
-					for (String line : toCheckMeta.getLore()) {
-						if (line.contains(wrapper.getLore())) {
-							loreContains = true;
-							break;
-						}
-					}
-					if (!loreContains) {
-						continue;
-					}
-				}
-				if (wrapper.shouldCheckNameContains()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
-						continue;
-					}
-				}
-				if (wrapper.shouldCheckNameStartsWith()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
-						continue;
-					}
-				}
-				if (wrapper.shouldCheckNameEquals()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
-						continue;
-					}
-				}
-				if (wrapper.shouldCheckAmount() && !(toCheck.getAmount() >= wrapper.getAmount())) {
-					continue;
-				}
-				if (wrapper.isStrict() && wrapper.shouldCheckType()) {
-					if (!wrapper.shouldCheckNameContains()
-							&& !wrapper.shouldCheckNameEquals()
-							&& !wrapper.shouldCheckNameStartsWith()
-							&& toCheckMeta.hasDisplayName()) {
-						continue;
-					}
-					if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
-						continue;
-					}
-				}
+			if (checkItem(toCheck, wrapper)) {
 				return PlaceholderAPIPlugin.booleanTrue();
 			}
 		}
 		return PlaceholderAPIPlugin.booleanFalse();
+	}
+	
+	private boolean checkItem(ItemStack toCheck, ItemWrapper wrapper) {
+		if (toCheck != null) {
+			if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
+				return false;
+			}
+			if (wrapper.shouldCheckDurability() && !(wrapper.getDurability() == toCheck.getDurability())) {
+				return false;
+			}
+			ItemMeta toCheckMeta = toCheck.getItemMeta();
+			if (wrapper.shouldCheckLoreContains()) {
+				if (!toCheckMeta.hasLore())
+					return false;
+				boolean loreContains = false;
+				for (String line : toCheckMeta.getLore()) {
+					if (line.contains(wrapper.getLore())) {
+						loreContains = true;
+						break;
+					}
+				}
+				if (!loreContains) {
+					return false;
+				}
+			}
+			if (wrapper.shouldCheckNameContains()) {
+				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
+					return false;
+				}
+			}
+			if (wrapper.shouldCheckNameStartsWith()) {
+				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
+					return false;
+				}
+			}
+			if (wrapper.shouldCheckNameEquals()) {
+				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
+					return false;
+				}
+			}
+			if (wrapper.shouldCheckAmount() && !(toCheck.getAmount() >= wrapper.getAmount())) {
+				return false;
+			}
+			if (wrapper.isStrict() && wrapper.shouldCheckType()) {
+				if (!wrapper.shouldCheckNameContains()
+						&& !wrapper.shouldCheckNameEquals()
+						&& !wrapper.shouldCheckNameStartsWith()
+						&& toCheckMeta.hasDisplayName()) {
+					return false;
+				}
+				if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	public int getInt(String s) {
@@ -297,6 +331,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					wrapper.setLore(part);
 					wrapper.setCheckLoreContains(true);
 				}
+				if (part.equalsIgnoreCase("inhand")) {
+					wrapper.setCheckHand(true);
+				}
 				if (part.equalsIgnoreCase("strict")) {
 					wrapper.setIsStrict(true);
 				}
@@ -352,6 +389,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		if (input.startsWith("lorecontains:")) {
 			wrapper.setLore(input);
 			wrapper.setCheckLoreContains(true);
+		}
+		if (input.equalsIgnoreCase("inhand")) {
+			wrapper.setCheckHand(true);
 		}
 		if (input.equalsIgnoreCase("strict")) {
 			wrapper.setIsStrict(true);
