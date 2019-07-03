@@ -28,7 +28,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.1.1";
+		return "1.2.0";
 	}
 	
 	public class ItemWrapper {
@@ -183,7 +183,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					continue;
 				}
 				ItemMeta toCheckMeta = toCheck.getItemMeta();
-				if (wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
+				if (wrapper.shouldCheckLoreContains()) {
+					if (!toCheckMeta.hasLore())
+						continue;
 					boolean loreContains = false;
 					for (String line : toCheckMeta.getLore()) {
 						if (line.contains(wrapper.getLore())) {
@@ -191,7 +193,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 							break;
 						}
 					}
-					if (!loreContains || (wrapper.shouldCheckLoreContains() && !toCheckMeta.hasLore())) {
+					if (!loreContains) {
 						continue;
 					}
 				}
@@ -212,6 +214,17 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				}
 				if (wrapper.shouldCheckAmount() && !(toCheck.getAmount() >= wrapper.getAmount())) {
 					continue;
+				}
+				if (wrapper.isStrict() && wrapper.shouldCheckType()) {
+					if (!wrapper.shouldCheckNameContains()
+							&& !wrapper.shouldCheckNameEquals()
+							&& !wrapper.shouldCheckNameStartsWith()
+							&& toCheckMeta.hasDisplayName()) {
+						continue;
+					}
+					if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
+						continue;
+					}
 				}
 				return PlaceholderAPIPlugin.booleanTrue();
 			}
@@ -284,7 +297,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					wrapper.setLore(part);
 					wrapper.setCheckLoreContains(true);
 				}
-				if(part.equalsIgnoreCase("strict")){
+				if (part.equalsIgnoreCase("strict")) {
 					wrapper.setIsStrict(true);
 				}
 				
@@ -336,7 +349,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			wrapper.setName(input);
 			wrapper.setCheckNameEquals(true);
 		}
-		if(input.equalsIgnoreCase("strict")){
+		if (input.startsWith("lorecontains:")) {
+			wrapper.setLore(input);
+			wrapper.setCheckLoreContains(true);
+		}
+		if (input.equalsIgnoreCase("strict")) {
 			wrapper.setIsStrict(true);
 		}
 		return wrapper;
