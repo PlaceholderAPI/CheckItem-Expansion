@@ -16,7 +16,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getAuthor() {
-		return "clip";
+		return "cj89898";
 	}
 	
 	public String getIdentifier() {
@@ -28,7 +28,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.2.0";
+		return "1.3.0";
 	}
 	
 	public class ItemWrapper {
@@ -260,6 +260,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
 					return false;
 				}
+				if (!wrapper.shouldCheckDurability() && toCheck.getDurability() != 0) {
+					return false;
+				}
 			}
 			return true;
 		}
@@ -387,6 +390,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			wrapper.setCheckNameEquals(true);
 		}
 		if (input.startsWith("lorecontains:")) {
+			input = input.replace("lorecontains:", "");
 			wrapper.setLore(input);
 			wrapper.setCheckLoreContains(true);
 		}
