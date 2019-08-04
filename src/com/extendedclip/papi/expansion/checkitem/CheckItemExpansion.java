@@ -1,7 +1,12 @@
 package com.extendedclip.papi.expansion.checkitem;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,7 +33,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.3.0";
+		return "1.4.0";
 	}
 	
 	public class ItemWrapper {
@@ -41,12 +46,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkAmount;
 		private boolean checkType;
 		private boolean checkHand;
+		private boolean checkEnchantments;
 		private boolean isStrict;
 		private String m;
 		private short d;
 		private int a;
 		private String name;
 		private String lore;
+		private HashMap<Enchantment, Integer> enchantments;
 		
 		public ItemWrapper(String material, short data, int amt) {
 			this.m = material.toUpperCase();
@@ -95,6 +102,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 		public String getLore() {
 			return this.lore;
+		}
+		
+		public void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
+			this.enchantments = enchantments;
+		}
+		
+		public HashMap<Enchantment, Integer> getEnchantments() {
+			return this.enchantments;
 		}
 		
 		public boolean shouldCheckDurability() {
@@ -167,6 +182,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 		public void setIsStrict(boolean isStrict) {
 			this.isStrict = isStrict;
+		}
+		
+		public boolean shouldCheckEnchantments() {
+			return this.checkEnchantments;
+		}
+		
+		public void setCheckEnchantments(boolean checkEnchantments) {
+			this.checkEnchantments = checkEnchantments;
 		}
 	}
 	
@@ -250,6 +273,21 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			if (wrapper.shouldCheckAmount() && !(toCheck.getAmount() >= wrapper.getAmount())) {
 				return false;
 			}
+			
+			Bukkit.getLogger().info(toCheck.containsEnchantment(Enchantment.DAMAGE_ALL) + "");
+			if (wrapper.shouldCheckEnchantments()) {
+				if (toCheck.getEnchantments() == null)
+					return false;
+				for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
+					if (!toCheck.containsEnchantment(e.getKey())) {
+						return false;
+					}
+					if (e.getValue() != -1 && !(toCheck.getEnchantmentLevel(e.getKey()) == e.getValue())) {
+						return false;
+					}
+				}
+			}
+			
 			if (wrapper.isStrict() && wrapper.shouldCheckType()) {
 				if (!wrapper.shouldCheckNameContains()
 						&& !wrapper.shouldCheckNameEquals()
@@ -279,126 +317,82 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	
 	public ItemWrapper getItem(String input) {
 		ItemWrapper wrapper = new ItemWrapper();
-		if (input.indexOf(",") > 0) {
-			String[] arrayOfString;
-			int j = (arrayOfString = input.split(",")).length;
-			for (int i = 0; i < j; i++) {
-				String part = arrayOfString[i];
-				if (part.startsWith("data:")) {
-					part = part.replace("data:", "");
-					try {
-						wrapper.setDurability(Short.parseShort(part));
-						wrapper.setCheckDurability(true);
-					} catch (Exception localException1) {
+		String[] arrayOfString;
+		int j = (arrayOfString = input.split(",")).length;
+		for (int i = 0; i < j; i++) {
+			String part = arrayOfString[i];
+			if (part.startsWith("data:")) {
+				part = part.replace("data:", "");
+				try {
+					wrapper.setDurability(Short.parseShort(part));
+					wrapper.setCheckDurability(true);
+				} catch (Exception localException1) {
+				}
+			}
+			if (part.startsWith("mat:")) {
+				part = part.replace("mat:", "");
+				try {
+					if (getInt(part) > 0) {
+						wrapper.setType(Material.getMaterial(Integer.parseInt(part)).name());
+						wrapper.setCheckType(true);
+					} else {
+						wrapper.setType(part);
+						wrapper.setCheckType(true);
+					}
+				} catch (Exception ex) {
+					return null;
+				}
+			}
+			if (part.startsWith("amt:")) {
+				part = part.replace("amt:", "");
+				try {
+					wrapper.setAmount(Integer.parseInt(part));
+					wrapper.setCheckAmount(true);
+				} catch (Exception localException2) {
+				}
+			}
+			if (part.startsWith("namestartswith:")) {
+				part = part.replace("namestartswith:", "");
+				wrapper.setName(part);
+				wrapper.setCheckNameStartsWith(true);
+			}
+			if (part.startsWith("namecontains:")) {
+				part = part.replace("namecontains:", "");
+				wrapper.setName(part);
+				wrapper.setCheckNameContains(true);
+			}
+			if (part.startsWith("nameequals:")) {
+				part = part.replace("nameequals:", "");
+				wrapper.setName(part);
+				wrapper.setCheckNameEquals(true);
+			}
+			if (part.startsWith("lorecontains:")) {
+				part = part.replace("lorecontains:", "");
+				wrapper.setLore(part);
+				wrapper.setCheckLoreContains(true);
+			}
+			if (part.startsWith("enchantments:")) {
+				part = part.replace("enchantments:", "");
+				HashMap<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>();
+				String[] enchArray = part.split(";");
+				for (String s : enchArray) {
+					String[] ench;
+					if ((ench = s.split("=")).length > 1) {
+						enchantments.put(Enchantment.getByName(ench[0].toUpperCase()), Integer.valueOf(ench[1]));
+					} else {
+						enchantments.put(Enchantment.getByName(s.toUpperCase()), -1);
 					}
 				}
-				if (part.startsWith("mat:")) {
-					part = part.replace("mat:", "");
-					try {
-						if (getInt(part) > 0) {
-							wrapper.setType(Material.getMaterial(Integer.parseInt(part)).name());
-							wrapper.setCheckType(true);
-						} else {
-							wrapper.setType(part);
-							wrapper.setCheckType(true);
-						}
-					} catch (Exception ex) {
-						return null;
-					}
-				}
-				if (part.startsWith("amt:")) {
-					part = part.replace("amt:", "");
-					try {
-						wrapper.setAmount(Integer.parseInt(part));
-						wrapper.setCheckAmount(true);
-					} catch (Exception localException2) {
-					}
-				}
-				if (part.startsWith("namestartswith:")) {
-					part = part.replace("namestartswith:", "");
-					wrapper.setName(part);
-					wrapper.setCheckNameStartsWith(true);
-				}
-				if (part.startsWith("namecontains:")) {
-					part = part.replace("namecontains:", "");
-					wrapper.setName(part);
-					wrapper.setCheckNameContains(true);
-				}
-				if (part.startsWith("nameequals:")) {
-					part = part.replace("nameequals:", "");
-					wrapper.setName(part);
-					wrapper.setCheckNameEquals(true);
-				}
-				if (part.startsWith("lorecontains:")) {
-					part = part.replace("lorecontains:", "");
-					wrapper.setLore(part);
-					wrapper.setCheckLoreContains(true);
-				}
-				if (part.equalsIgnoreCase("inhand")) {
-					wrapper.setCheckHand(true);
-				}
-				if (part.equalsIgnoreCase("strict")) {
-					wrapper.setIsStrict(true);
-				}
-				
+				wrapper.setEnchantments(enchantments);
+				wrapper.setCheckEnchantments(true);
 			}
-			return wrapper;
-		}
-		if (input.startsWith("data:")) {
-			input = input.replace("data:", "");
-			try {
-				wrapper.setDurability(Short.parseShort(input));
-				wrapper.setCheckDurability(true);
-			} catch (Exception localException3) {
+			if (part.equalsIgnoreCase("inhand")) {
+				wrapper.setCheckHand(true);
 			}
-		}
-		if (input.startsWith("mat:")) {
-			input = input.replace("mat:", "");
-			try {
-				if (getInt(input) > 0) {
-					wrapper.setType(Material.getMaterial(Integer.parseInt(input)).name());
-					wrapper.setCheckType(true);
-				} else {
-					wrapper.setType(input);
-					wrapper.setCheckType(true);
-				}
-			} catch (Exception ex) {
-				return null;
+			if (part.equalsIgnoreCase("strict")) {
+				wrapper.setIsStrict(true);
 			}
-		}
-		if (input.startsWith("amt:")) {
-			input = input.replace("amt:", "");
-			try {
-				wrapper.setAmount(Integer.parseInt(input));
-				wrapper.setCheckAmount(true);
-			} catch (Exception localException4) {
-			}
-		}
-		if (input.startsWith("namestartswith:")) {
-			input = input.replace("namestartswith:", "");
-			wrapper.setName(input);
-			wrapper.setCheckNameStartsWith(true);
-		}
-		if (input.startsWith("namecontains:")) {
-			input = input.replace("namecontains:", "");
-			wrapper.setName(input);
-			wrapper.setCheckNameContains(true);
-		}
-		if (input.startsWith("nameequals:")) {
-			input = input.replace("nameequals:", "");
-			wrapper.setName(input);
-			wrapper.setCheckNameEquals(true);
-		}
-		if (input.startsWith("lorecontains:")) {
-			input = input.replace("lorecontains:", "");
-			wrapper.setLore(input);
-			wrapper.setCheckLoreContains(true);
-		}
-		if (input.equalsIgnoreCase("inhand")) {
-			wrapper.setCheckHand(true);
-		}
-		if (input.equalsIgnoreCase("strict")) {
-			wrapper.setIsStrict(true);
+			
 		}
 		return wrapper;
 	}
