@@ -28,12 +28,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		return "checkitem";
 	}
 	
-	public String getPlugin() {
-		return null;
-	}
-	
 	public String getVersion() {
-		return "1.4.0";
+		return "1.4.1";
 	}
 	
 	public class ItemWrapper {
@@ -266,7 +262,6 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					}
 				}
 
-				Bukkit.getLogger().info(toCheck.containsEnchantment(Enchantment.DAMAGE_ALL) + "");
 				if (wrapper.shouldCheckEnchantments()) {
 					if (toCheck.getEnchantments() == null)
 						continue;
@@ -309,8 +304,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		try {
 			return Integer.parseInt(s);
 		} catch (NumberFormatException ex) {
+			return -1;
 		}
-		return -1;
 	}
 	
 	public ItemWrapper getItem(String input) {
@@ -371,7 +366,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 			if (part.startsWith("enchantments:")) {
 				part = part.replace("enchantments:", "");
-				HashMap<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>();
+				HashMap<Enchantment, Integer> enchantments = new HashMap<>();
 				String[] enchArray = part.split(";");
 				for (String s : enchArray) {
 					String[] ench;
