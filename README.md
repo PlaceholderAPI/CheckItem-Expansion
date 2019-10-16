@@ -11,7 +11,7 @@
 - `amt:<amount>`
 - `data:<data>`
 - `lorecontains:<lore>`
-- `enchantments:<enchantment=lvl> (=lvl is optional)`
+- `enchantments:<enchantment=lvl>;<enchantment>` (=lvl is optional)
 - `strict`
 - `inhand`
 
