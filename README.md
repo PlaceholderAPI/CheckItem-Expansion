@@ -1,7 +1,7 @@
 # CheckItem-Expansion
 
 **Placeholder:**
-`%checkitem_<modifiers_seperated_by_comma>%`
+`%checkitem_<modifier1>,<modifier2>,<...>%`
 
 **Modifiers:**
 - `namecontains:<name>`
