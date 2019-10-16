@@ -1,18 +1,18 @@
 # CheckItem-Expansion
 
-Placeholder:
-%checkitem_<modifiers_seperated_by_comma>%
+**Placeholder:**
+`%checkitem_<modifiers_seperated_by_comma>%`
 
-Modifiers:
-namecontains:<name>
-namestartswith:<name>
-nameequals:<name>
-mat:<material>
-amt:<amount>
-data:<data>
-lorecontains:<lore>
-enchantments:<enchantment=lvl> (=lvl is optional)
-strict
-inhand
+**Modifiers:**
+- `namecontains:<name>`
+- `namestartswith:<name>`
+- `nameequals:<name>`
+- `mat:<material>`
+- `amt:<amount>`
+- `data:<data>`
+- `lorecontains:<lore>`
+- `enchantments:<enchantment=lvl> (=lvl is optional)`
+- `strict`
+- `inhand`
 
-Ex: %checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%
+Ex: `%checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%`
