@@ -28,12 +28,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		return "checkitem";
 	}
 	
-	public String getPlugin() {
-		return null;
-	}
-	
 	public String getVersion() {
-		return "1.4.0";
+		return "1.4.1";
 	}
 	
 	public class ItemWrapper {
@@ -205,15 +201,15 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		if (wrapper.shouldCheckHand()) {
 			try {
 				Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
-				if (checkItem(p.getInventory().getItemInMainHand(), wrapper)) {
-					return PlaceholderAPIPlugin.booleanTrue();
-				}
-				if (checkItem(p.getInventory().getItemInOffHand(), wrapper)) {
+				ItemStack[] hands = new ItemStack[2];
+				hands[0] = p.getInventory().getItemInMainHand();
+				hands[1] = p.getInventory().getItemInOffHand();
+				if (checkItem(wrapper, hands)) {
 					return PlaceholderAPIPlugin.booleanTrue();
 				}
 				return PlaceholderAPIPlugin.booleanFalse();
 			} catch (NoSuchMethodException e) {
-				if (checkItem(p.getInventory().getItemInHand(), wrapper)) {
+				if (checkItem(wrapper, p.getInventory().getItemInHand())) {
 					return PlaceholderAPIPlugin.booleanTrue();
 				}
 				return PlaceholderAPIPlugin.booleanFalse();
@@ -221,98 +217,103 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				return PlaceholderAPIPlugin.booleanFalse();
 			}
 		}
-		ItemStack[] arrayOfItemStack;
-		int j = (arrayOfItemStack = p.getInventory().getContents()).length;
-		for (int i = 0; i < j; i++) {
-			ItemStack toCheck = arrayOfItemStack[i];
-			if (checkItem(toCheck, wrapper)) {
-				return PlaceholderAPIPlugin.booleanTrue();
-			}
-		}
-		return PlaceholderAPIPlugin.booleanFalse();
+		ItemStack[] arrayOfItemStack = p.getInventory().getContents();
+		return checkItem(wrapper, arrayOfItemStack) ? PlaceholderAPIPlugin.booleanTrue()
+				: PlaceholderAPIPlugin.booleanFalse();
 	}
 	
-	private boolean checkItem(ItemStack toCheck, ItemWrapper wrapper) {
-		if (toCheck != null) {
-			if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
-				return false;
-			}
-			if (wrapper.shouldCheckDurability() && !(wrapper.getDurability() == toCheck.getDurability())) {
-				return false;
-			}
-			ItemMeta toCheckMeta = toCheck.getItemMeta();
-			if (wrapper.shouldCheckLoreContains()) {
-				if (!toCheckMeta.hasLore())
-					return false;
-				boolean loreContains = false;
-				for (String line : toCheckMeta.getLore()) {
-					if (line.contains(wrapper.getLore())) {
-						loreContains = true;
-						break;
+	private boolean checkItem(ItemWrapper wrapper, ItemStack... items) {
+		int total = 0;
+		itemsLoop: for (ItemStack toCheck : items) {
+			if (toCheck != null) {
+				if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
+					continue;
+				}
+				if (wrapper.shouldCheckDurability() && !(wrapper.getDurability() == toCheck.getDurability())) {
+					continue;
+				}
+				ItemMeta toCheckMeta = toCheck.getItemMeta();
+				if (wrapper.shouldCheckLoreContains()) {
+					if (!toCheckMeta.hasLore())
+						continue;
+					boolean loreContains = false;
+					for (String line : toCheckMeta.getLore()) {
+						if (line.contains(wrapper.getLore())) {
+							loreContains = true;
+							break;
+						}
+					}
+					if (!loreContains) {
+						continue;
 					}
 				}
-				if (!loreContains) {
-					return false;
-				}
-			}
-			if (wrapper.shouldCheckNameContains()) {
-				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
-					return false;
-				}
-			}
-			if (wrapper.shouldCheckNameStartsWith()) {
-				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
-					return false;
-				}
-			}
-			if (wrapper.shouldCheckNameEquals()) {
-				if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
-					return false;
-				}
-			}
-			if (wrapper.shouldCheckAmount() && !(toCheck.getAmount() >= wrapper.getAmount())) {
-				return false;
-			}
-			
-			Bukkit.getLogger().info(toCheck.containsEnchantment(Enchantment.DAMAGE_ALL) + "");
-			if (wrapper.shouldCheckEnchantments()) {
-				if (toCheck.getEnchantments() == null)
-					return false;
-				for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
-					if (!toCheck.containsEnchantment(e.getKey())) {
-						return false;
-					}
-					if (e.getValue() != -1 && !(toCheck.getEnchantmentLevel(e.getKey()) == e.getValue())) {
-						return false;
+				if (wrapper.shouldCheckNameContains()) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
+						continue;
 					}
 				}
+				if (wrapper.shouldCheckNameStartsWith()) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
+						continue;
+					}
+				}
+				if (wrapper.shouldCheckNameEquals()) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
+						continue;
+					}
+				}
+				
+				if (wrapper.shouldCheckEnchantments()) {
+					if (toCheck.getEnchantments() == null)
+						continue;
+					for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
+						if (!toCheck.containsEnchantment(e.getKey())) {
+							continue itemsLoop;
+						}
+						if (e.getValue() != -1 && !(toCheck.getEnchantmentLevel(e.getKey()) == e.getValue())) {
+							continue itemsLoop;
+						}
+					}
+				}
+				
+				if (wrapper.isStrict() && wrapper.shouldCheckType()) {
+					if (!wrapper.shouldCheckNameContains()
+							&& !wrapper.shouldCheckNameEquals()
+							&& !wrapper.shouldCheckNameStartsWith()
+							&& toCheckMeta.hasDisplayName()) {
+						continue;
+					}
+					if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
+						continue;
+					}
+					if (!wrapper.shouldCheckDurability() && toCheck.getDurability() != 0) {
+						continue;
+					}
+					if (!wrapper.shouldCheckEnchantments() && !toCheck.getEnchantments().isEmpty()) {
+						Bukkit.getLogger().info("4");
+						continue;
+					}
+				}
+				total += toCheck.getAmount();
 			}
-			
-			if (wrapper.isStrict() && wrapper.shouldCheckType()) {
-				if (!wrapper.shouldCheckNameContains()
-						&& !wrapper.shouldCheckNameEquals()
-						&& !wrapper.shouldCheckNameStartsWith()
-						&& toCheckMeta.hasDisplayName()) {
-					return false;
-				}
-				if (!wrapper.shouldCheckLoreContains() && toCheckMeta.hasLore()) {
-					return false;
-				}
-				if (!wrapper.shouldCheckDurability() && toCheck.getDurability() != 0) {
-					return false;
-				}
-			}
-			return true;
 		}
-		return false;
+		Bukkit.getLogger().info("Total: " + total);
+		if (wrapper.shouldCheckAmount()) {
+			if (wrapper.isStrict()) {
+				return total == wrapper.getAmount();
+			}
+			return total >= wrapper.getAmount();
+		}
+		
+		return total >= 1;
 	}
 	
 	public int getInt(String s) {
 		try {
 			return Integer.parseInt(s);
 		} catch (NumberFormatException ex) {
+			return -1;
 		}
-		return -1;
 	}
 	
 	public ItemWrapper getItem(String input) {
@@ -373,7 +374,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 			if (part.startsWith("enchantments:")) {
 				part = part.replace("enchantments:", "");
-				HashMap<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>();
+				HashMap<Enchantment, Integer> enchantments = new HashMap<>();
 				String[] enchArray = part.split(";");
 				for (String s : enchArray) {
 					String[] ench;
