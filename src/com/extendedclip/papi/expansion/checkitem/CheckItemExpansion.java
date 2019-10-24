@@ -190,7 +190,16 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
-		ItemWrapper wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args));
+		ItemWrapper wrapper;
+		if (args.startsWith("amount_")) {
+			wrapper = getItem(ChatColor.translateAlternateColorCodes('&',
+					args.replace("amount_", "")));
+			if (wrapper == null)
+				return null;
+
+			return String.valueOf(getItemAmount(wrapper, p.getInventory().getContents()));
+		}
+		wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args));
 		if (wrapper == null) {
 			return null;
 		}
@@ -223,6 +232,18 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	private boolean checkItem(ItemWrapper wrapper, ItemStack... items) {
+		int total = getItemAmount(wrapper, items);
+		if (wrapper.shouldCheckAmount()) {
+			if (wrapper.isStrict()) {
+				return total == wrapper.getAmount();
+			}
+			return total >= wrapper.getAmount();
+		}
+
+		return total >= 1;
+	}
+
+	private int getItemAmount(ItemWrapper wrapper, ItemStack... items) {
 		int total = 0;
 		itemsLoop: for (ItemStack toCheck : items) {
 			if (toCheck != null) {
@@ -297,15 +318,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				total += toCheck.getAmount();
 			}
 		}
-		Bukkit.getLogger().info("Total: " + total);
-		if (wrapper.shouldCheckAmount()) {
-			if (wrapper.isStrict()) {
-				return total == wrapper.getAmount();
-			}
-			return total >= wrapper.getAmount();
-		}
-		
-		return total >= 1;
+		return total;
 	}
 	
 	public int getInt(String s) {
