@@ -50,16 +50,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private String name;
 		private String lore;
 		private HashMap<Enchantment, Integer> enchantments;
-		
-		public ItemWrapper(String material, short data, int amt) {
-			this.m = material.toUpperCase();
-			this.d = data;
-			this.a = amt;
-		}
-		
-		public ItemWrapper() {
-		}
-		
+
 		public String getType() {
 			return this.m;
 		}
@@ -269,17 +260,17 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					}
 				}
 				if (wrapper.shouldCheckNameContains()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.getName()))) {
 						continue;
 					}
 				}
 				if (wrapper.shouldCheckNameStartsWith()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.getName()))) {
 						continue;
 					}
 				}
 				if (wrapper.shouldCheckNameEquals()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.getName()))) {
 						continue;
 					}
 				}
@@ -321,7 +312,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		return total;
 	}
 	
-	public int getInt(String s) {
+	private int getInt(String s) {
 		try {
 			return Integer.parseInt(s);
 		} catch (NumberFormatException ex) {
@@ -329,7 +320,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		}
 	}
 	
-	public ItemWrapper getItem(String input) {
+	private ItemWrapper getItem(String input) {
 		ItemWrapper wrapper = new ItemWrapper();
 		String[] arrayOfString;
 		int j = (arrayOfString = input.split(",")).length;
@@ -340,50 +331,55 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				try {
 					wrapper.setDurability(Short.parseShort(part));
 					wrapper.setCheckDurability(true);
+					continue;
 				} catch (Exception localException1) {
+				    continue;
 				}
 			}
 			if (part.startsWith("mat:")) {
 				part = part.replace("mat:", "");
 				try {
 					if (getInt(part) > 0) {
-						wrapper.setType(Material.getMaterial(Integer.parseInt(part)).name());
+						wrapper.setType(Material.getMaterial(getInt(part)).name());
 						wrapper.setCheckType(true);
-					} else {
-						wrapper.setType(part);
-						wrapper.setCheckType(true);
+						continue;
 					}
-				} catch (Exception ex) {
+                    wrapper.setType(part);
+                    wrapper.setCheckType(true);
+                    continue;
+                } catch (Exception ex) {
 					return null;
 				}
 			}
 			if (part.startsWith("amt:")) {
-				part = part.replace("amt:", "");
-				try {
-					wrapper.setAmount(Integer.parseInt(part));
-					wrapper.setCheckAmount(true);
-				} catch (Exception localException2) {
-				}
-			}
+                part = part.replace("amt:", "");
+                wrapper.setAmount(getInt(part));
+                wrapper.setCheckAmount(true);
+                continue;
+            }
 			if (part.startsWith("namestartswith:")) {
 				part = part.replace("namestartswith:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameStartsWith(true);
+				continue;
 			}
 			if (part.startsWith("namecontains:")) {
 				part = part.replace("namecontains:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameContains(true);
+				continue;
 			}
 			if (part.startsWith("nameequals:")) {
 				part = part.replace("nameequals:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameEquals(true);
+				continue;
 			}
 			if (part.startsWith("lorecontains:")) {
 				part = part.replace("lorecontains:", "");
 				wrapper.setLore(part);
 				wrapper.setCheckLoreContains(true);
+				continue;
 			}
 			if (part.startsWith("enchantments:")) {
 				part = part.replace("enchantments:", "");
@@ -399,9 +395,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				}
 				wrapper.setEnchantments(enchantments);
 				wrapper.setCheckEnchantments(true);
+				continue;
 			}
 			if (part.equalsIgnoreCase("inhand")) {
 				wrapper.setCheckHand(true);
+				continue;
 			}
 			if (part.equalsIgnoreCase("strict")) {
 				wrapper.setIsStrict(true);
