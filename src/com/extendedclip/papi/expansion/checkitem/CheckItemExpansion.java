@@ -29,10 +29,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.5.0";
+		return "1.6.0";
 	}
 	
 	public class ItemWrapper {
+		
 		
 		private boolean checkNameContains;
 		private boolean checkNameStartsWith;
@@ -44,12 +45,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkHand;
 		private boolean checkEnchantments;
 		private boolean isStrict;
+		private boolean hdbItem;
 		private String m;
 		private short d;
 		private int a;
 		private String name;
 		private String lore;
 		private HashMap<Enchantment, Integer> enchantments;
+		private int hdbId;
 		
 		public ItemWrapper(String material, short data, int amt) {
 			this.m = material.toUpperCase();
@@ -107,6 +110,17 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		public HashMap<Enchantment, Integer> getEnchantments() {
 			return this.enchantments;
 		}
+		
+		public void setHdbId(int id){
+			this.hdbId = id;
+		}
+		
+		public int getHdbId(){
+			return this.hdbId;
+		}
+		
+
+
 		
 		public boolean shouldCheckDurability() {
 			return this.checkDurability;
