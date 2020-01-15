@@ -34,7 +34,6 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	
 	public class ItemWrapper {
 		
-		
 		private boolean checkNameContains;
 		private boolean checkNameStartsWith;
 		private boolean checkNameEquals;
@@ -111,16 +110,13 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			return this.enchantments;
 		}
 		
-		public void setHdbId(int id){
+		public void setHdbId(int id) {
 			this.hdbId = id;
 		}
 		
-		public int getHdbId(){
+		public int getHdbId() {
 			return this.hdbId;
 		}
-		
-
-
 		
 		public boolean shouldCheckDurability() {
 			return this.checkDurability;
@@ -204,7 +200,15 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
-		ItemWrapper wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args));
+		ItemWrapper wrapper;
+		if (args.startsWith("amount_")) {
+			wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
+			if (wrapper == null)
+				return null;
+			
+			return String.valueOf(getItemAmount(wrapper, p.getInventory().getContents()));
+		}
+		wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args));
 		if (wrapper == null) {
 			return null;
 		}
@@ -237,6 +241,18 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	private boolean checkItem(ItemWrapper wrapper, ItemStack... items) {
+		int total = getItemAmount(wrapper, items);
+		if (wrapper.shouldCheckAmount()) {
+			if (wrapper.isStrict()) {
+				return total == wrapper.getAmount();
+			}
+			return total >= wrapper.getAmount();
+		}
+		
+		return total >= 1;
+	}
+	
+	private int getItemAmount(ItemWrapper wrapper, ItemStack... items) {
 		int total = 0;
 		itemsLoop: for (ItemStack toCheck : items) {
 			if (toCheck != null) {
@@ -262,17 +278,17 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					}
 				}
 				if (wrapper.shouldCheckNameContains()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.getName()))) {
 						continue;
 					}
 				}
 				if (wrapper.shouldCheckNameStartsWith()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.getName()))) {
 						continue;
 					}
 				}
 				if (wrapper.shouldCheckNameEquals()) {
-					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.name))) {
+					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.getName()))) {
 						continue;
 					}
 				}
@@ -304,25 +320,16 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 						continue;
 					}
 					if (!wrapper.shouldCheckEnchantments() && !toCheck.getEnchantments().isEmpty()) {
-						Bukkit.getLogger().info("4");
 						continue;
 					}
 				}
 				total += toCheck.getAmount();
 			}
 		}
-		Bukkit.getLogger().info("Total: " + total);
-		if (wrapper.shouldCheckAmount()) {
-			if (wrapper.isStrict()) {
-				return total == wrapper.getAmount();
-			}
-			return total >= wrapper.getAmount();
-		}
-		
-		return total >= 1;
+		return total;
 	}
 	
-	public int getInt(String s) {
+	private int getInt(String s) {
 		try {
 			return Integer.parseInt(s);
 		} catch (NumberFormatException ex) {
@@ -330,7 +337,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		}
 	}
 	
-	public ItemWrapper getItem(String input) {
+	private ItemWrapper getItem(String input) {
 		ItemWrapper wrapper = new ItemWrapper();
 		String[] arrayOfString;
 		int j = (arrayOfString = input.split(",")).length;
@@ -341,50 +348,55 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				try {
 					wrapper.setDurability(Short.parseShort(part));
 					wrapper.setCheckDurability(true);
+					continue;
 				} catch (Exception localException1) {
+					continue;
 				}
 			}
 			if (part.startsWith("mat:")) {
 				part = part.replace("mat:", "");
 				try {
 					if (getInt(part) > 0) {
-						wrapper.setType(Material.getMaterial(Integer.parseInt(part)).name());
+						wrapper.setType(Material.getMaterial(getInt(part)).name());
 						wrapper.setCheckType(true);
-					} else {
-						wrapper.setType(part);
-						wrapper.setCheckType(true);
+						continue;
 					}
+					wrapper.setType(part);
+					wrapper.setCheckType(true);
+					continue;
 				} catch (Exception ex) {
 					return null;
 				}
 			}
 			if (part.startsWith("amt:")) {
 				part = part.replace("amt:", "");
-				try {
-					wrapper.setAmount(Integer.parseInt(part));
-					wrapper.setCheckAmount(true);
-				} catch (Exception localException2) {
-				}
+				wrapper.setAmount(getInt(part));
+				wrapper.setCheckAmount(true);
+				continue;
 			}
 			if (part.startsWith("namestartswith:")) {
 				part = part.replace("namestartswith:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameStartsWith(true);
+				continue;
 			}
 			if (part.startsWith("namecontains:")) {
 				part = part.replace("namecontains:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameContains(true);
+				continue;
 			}
 			if (part.startsWith("nameequals:")) {
 				part = part.replace("nameequals:", "");
 				wrapper.setName(part);
 				wrapper.setCheckNameEquals(true);
+				continue;
 			}
 			if (part.startsWith("lorecontains:")) {
 				part = part.replace("lorecontains:", "");
 				wrapper.setLore(part);
 				wrapper.setCheckLoreContains(true);
+				continue;
 			}
 			if (part.startsWith("enchantments:")) {
 				part = part.replace("enchantments:", "");
@@ -400,9 +412,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				}
 				wrapper.setEnchantments(enchantments);
 				wrapper.setCheckEnchantments(true);
+				continue;
 			}
 			if (part.equalsIgnoreCase("inhand")) {
 				wrapper.setCheckHand(true);
+				continue;
 			}
 			if (part.equalsIgnoreCase("strict")) {
 				wrapper.setIsStrict(true);
