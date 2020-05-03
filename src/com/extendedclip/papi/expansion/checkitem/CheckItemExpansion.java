@@ -2,9 +2,9 @@ package com.extendedclip.papi.expansion.checkitem;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +28,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.6.0";
+		return "1.7.0";
 	}
 	
 	public class ItemWrapper {
@@ -38,51 +38,61 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkNameEquals;
 		private boolean checkLoreContains;
 		private boolean checkDurability;
+		private boolean checkCustomData;
 		private boolean checkAmount;
 		private boolean checkType;
 		private boolean checkHand;
 		private boolean checkEnchantments;
 		private boolean isStrict;
 		private boolean hdbItem;
-		private String m;
-		private short d;
-		private int a;
+		private String material;
+		private short data;
+		private int customData;
+		private int amount;
 		private String name;
 		private String lore;
 		private HashMap<Enchantment, Integer> enchantments;
 		private int hdbId;
 		
 		public ItemWrapper(String material, short data, int amt) {
-			this.m = material.toUpperCase();
-			this.d = data;
-			this.a = amt;
+			this.material = material.toUpperCase();
+			this.data = data;
+			this.amount = amt;
 		}
 		
 		public ItemWrapper() {
 		}
 		
 		public String getType() {
-			return this.m;
+			return this.material;
 		}
 		
 		public void setType(String material) {
-			this.m = material.toUpperCase();
+			this.material = material.toUpperCase();
 		}
 		
 		public short getDurability() {
-			return this.d;
+			return this.data;
 		}
 		
 		public void setDurability(short durability) {
-			this.d = durability;
+			this.data = durability;
+		}
+		
+		public int getCustomData() {
+			return this.customData;
+		}
+		
+		public void setCustomData(int customData) {
+			this.customData = customData;
 		}
 		
 		public int getAmount() {
-			return this.a;
+			return this.amount;
 		}
 		
 		public void setAmount(int amount) {
-			this.a = amount;
+			this.amount = amount;
 		}
 		
 		public String getName() {
@@ -123,6 +133,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 		public void setCheckDurability(boolean checkDurability) {
 			this.checkDurability = checkDurability;
+		}
+		
+		public boolean shouldCheckCustomData() {
+			return this.checkCustomData;
+		}
+		
+		public void setCheckCustomData(boolean checkCustomData) {
+			this.checkCustomData = checkCustomData;
 		}
 		
 		public boolean shouldCheckAmount() {
@@ -199,6 +217,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
+		args = args.toLowerCase();
 		ItemWrapper wrapper;
 		if (args.startsWith("amount_")) {
 			wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
@@ -262,6 +281,18 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					continue;
 				}
 				ItemMeta toCheckMeta = toCheck.getItemMeta();
+				if (wrapper.shouldCheckCustomData()) {
+					try {
+						if (!toCheckMeta.hasCustomModelData())
+							continue;
+						if (wrapper.getCustomData() != toCheckMeta.getCustomModelData()) {
+							continue;
+						}
+					} catch (NoSuchMethodError e) {
+						PlaceholderAPIPlugin.getInstance().getLogger().log(Level.WARNING,
+								"[CheckItem Expansion] CustomModelData doesn't exist before 1.14!");
+					}
+				}
 				if (wrapper.shouldCheckLoreContains()) {
 					if (!toCheckMeta.hasLore())
 						continue;
@@ -352,20 +383,17 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					continue;
 				}
 			}
+			if (part.startsWith("custommodeldata:")) {
+				part = part.replace("custommodeldata:", "");
+				wrapper.setCustomData(getInt(part));
+				wrapper.setCheckCustomData(true);
+				continue;
+			}
 			if (part.startsWith("mat:")) {
 				part = part.replace("mat:", "");
-				try {
-					if (getInt(part) > 0) {
-						wrapper.setType(Material.getMaterial(getInt(part)).name());
-						wrapper.setCheckType(true);
-						continue;
-					}
-					wrapper.setType(part);
-					wrapper.setCheckType(true);
-					continue;
-				} catch (Exception ex) {
-					return null;
-				}
+				wrapper.setType(part);
+				wrapper.setCheckType(true);
+				continue;
 			}
 			if (part.startsWith("amt:")) {
 				part = part.replace("amt:", "");
@@ -413,11 +441,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				wrapper.setCheckEnchantments(true);
 				continue;
 			}
-			if (part.equalsIgnoreCase("inhand")) {
+			if (part.equals("inhand")) {
 				wrapper.setCheckHand(true);
 				continue;
 			}
-			if (part.equalsIgnoreCase("strict")) {
+			if (part.equals("strict")) {
 				wrapper.setIsStrict(true);
 			}
 			
