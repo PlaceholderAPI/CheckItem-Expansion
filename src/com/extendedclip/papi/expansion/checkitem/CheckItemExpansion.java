@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +30,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.7.1";
+		return "1.8.0";
 	}
 	
 	public class ItemWrapper {
@@ -428,11 +430,27 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				String[] enchArray = part.split(";");
 				for (String s : enchArray) {
 					String[] ench;
-					if ((ench = s.split("=")).length > 1) {
-						enchantments.put(Enchantment.getByName(ench[0].toUpperCase()), Integer.valueOf(ench[1]));
-					} else {
-						enchantments.put(Enchantment.getByName(s.toUpperCase()), -1);
+					try { //This try is possibly useless, mending seems to work with getByName as well, no idea how I fixed it. Issue #10
+						Class.forName("org.bukkit.enchantments.Enchantment").getMethod("getByKey", NamespacedKey.class);
+						if ((ench = s.split("=")).length > 1) {
+							NamespacedKey key = NamespacedKey.minecraft(ench[0].toUpperCase());
+							Bukkit.getLogger()
+									.info(ench[0].toUpperCase() + ", " + key.getNamespace() + ", " + key.getKey());
+							enchantments.put(Enchantment.getByKey(key), Integer.valueOf(ench[1]));
+						} else {
+							NamespacedKey key = NamespacedKey.minecraft(s.toUpperCase());
+							enchantments.put(Enchantment.getByKey(key), -1);
+						}
+						
+					} catch (NoSuchMethodError e) {
+						if ((ench = s.split("=")).length > 1) {
+							enchantments.put(Enchantment.getByName(ench[0].toUpperCase()), Integer.valueOf(ench[1]));
+						} else {
+							enchantments.put(Enchantment.getByName(s.toUpperCase()), -1);
+						}
+					} catch (Exception e) {
 					}
+					
 				}
 				wrapper.setEnchantments(enchantments);
 				wrapper.setCheckEnchantments(true);
