@@ -11,8 +11,9 @@
 - `mat:<material>`
 - `amt:<amount>`
 - `data:<data>`
+- `custommodeldata:<data>`
 - `lorecontains:<lore>`
-- `enchantments:<enchantment=lvl>;<enchantment>` (=lvl is optional)
+- `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
 - `strict`
 - `inhand`
 
