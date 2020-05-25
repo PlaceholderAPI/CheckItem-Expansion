@@ -28,7 +28,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.7.0";
+		return "1.7.1";
 	}
 	
 	public class ItemWrapper {
@@ -217,7 +217,6 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
-		args = args.toLowerCase();
 		ItemWrapper wrapper;
 		if (args.startsWith("amount_")) {
 			wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
@@ -311,13 +310,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.getName()))) {
 						continue;
 					}
-				}
-				if (wrapper.shouldCheckNameStartsWith()) {
+				} else if (wrapper.shouldCheckNameStartsWith()) {
 					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().startsWith(wrapper.getName()))) {
 						continue;
 					}
-				}
-				if (wrapper.shouldCheckNameEquals()) {
+				} else if (wrapper.shouldCheckNameEquals()) {
 					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.getName()))) {
 						continue;
 					}
