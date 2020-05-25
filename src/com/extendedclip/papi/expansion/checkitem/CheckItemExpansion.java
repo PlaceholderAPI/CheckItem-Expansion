@@ -1,15 +1,16 @@
 package com.extendedclip.papi.expansion.checkitem;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
@@ -30,7 +31,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.8.0";
+		return "1.8.1";
 	}
 	
 	public class ItemWrapper {
@@ -323,13 +324,19 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				}
 				
 				if (wrapper.shouldCheckEnchantments()) {
-					if (toCheck.getEnchantments() == null)
+					if (toCheckMeta.getEnchants() == null)
 						continue;
+					Map<Enchantment, Integer> toCheckEnchants;
+					if (toCheckMeta instanceof EnchantmentStorageMeta) {
+						toCheckEnchants = ((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants();
+					} else {
+						toCheckEnchants = toCheckMeta.getEnchants();
+					}
 					for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
-						if (!toCheck.containsEnchantment(e.getKey())) {
+						if (!toCheckEnchants.containsKey(e.getKey())) {
 							continue itemsLoop;
 						}
-						if (e.getValue() != -1 && !(toCheck.getEnchantmentLevel(e.getKey()) == e.getValue())) {
+						if (e.getValue() != -1 && !(toCheckEnchants.get(e.getKey()) == e.getValue())) {
 							continue itemsLoop;
 						}
 					}
@@ -428,29 +435,29 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				part = part.replace("enchantments:", "");
 				HashMap<Enchantment, Integer> enchantments = new HashMap<>();
 				String[] enchArray = part.split(";");
-				for (String s : enchArray) {
-					String[] ench;
-					try { //This try is possibly useless, mending seems to work with getByName as well, no idea how I fixed it. Issue #10
-						Class.forName("org.bukkit.enchantments.Enchantment").getMethod("getByKey", NamespacedKey.class);
+				try { //This try is possibly useless, mending seems to work with getByName as well, no idea how I fixed it. Issue #10
+					Class.forName("org.bukkit.enchantments.Enchantment").getMethod("getByKey", NamespacedKey.class);
+					for (String s : enchArray) {
+						String[] ench;
 						if ((ench = s.split("=")).length > 1) {
-							NamespacedKey key = NamespacedKey.minecraft(ench[0].toUpperCase());
-							Bukkit.getLogger()
-									.info(ench[0].toUpperCase() + ", " + key.getNamespace() + ", " + key.getKey());
+							NamespacedKey key = NamespacedKey.minecraft(ench[0].toLowerCase());
 							enchantments.put(Enchantment.getByKey(key), Integer.valueOf(ench[1]));
 						} else {
-							NamespacedKey key = NamespacedKey.minecraft(s.toUpperCase());
+							NamespacedKey key = NamespacedKey.minecraft(s.toLowerCase());
 							enchantments.put(Enchantment.getByKey(key), -1);
 						}
-						
-					} catch (NoSuchMethodError e) {
+					}
+				} catch (NoSuchMethodException e) {
+					for (String s : enchArray) {
+						String[] ench;
 						if ((ench = s.split("=")).length > 1) {
 							enchantments.put(Enchantment.getByName(ench[0].toUpperCase()), Integer.valueOf(ench[1]));
 						} else {
 							enchantments.put(Enchantment.getByName(s.toUpperCase()), -1);
 						}
-					} catch (Exception e) {
 					}
-					
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				wrapper.setEnchantments(enchantments);
 				wrapper.setCheckEnchantments(true);
