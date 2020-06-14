@@ -5,14 +5,15 @@
 - `%checkitem_amount_<modifier1>,<modifier2>,<...>%` - Returns amount of items the user has
 
 **Modifiers:**
-- `namecontains:<name>`
-- `namestartswith:<name>`
-- `nameequals:<name>`
+- `namecontains:<string>`
+- `namestartswith:<string>`
+- `nameequals:<string>`
 - `mat:<material>`
-- `amt:<amount>`
-- `data:<data>`
-- `custommodeldata:<data>`
-- `lorecontains:<lore>`
+- `amt:<integer>`
+- `data:<integer>`
+- `custommodeldata:<integer>`
+- `lorecontains:<string>`
+- `matcontains:<string>`
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
 - `strict`
 - `inhand`
