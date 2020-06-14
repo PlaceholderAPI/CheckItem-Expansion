@@ -31,7 +31,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.8.1";
+		return "1.8.2";
 	}
 	
 	public class ItemWrapper {
@@ -40,6 +40,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkNameStartsWith;
 		private boolean checkNameEquals;
 		private boolean checkLoreContains;
+		private boolean checkMaterialContains;
 		private boolean checkDurability;
 		private boolean checkCustomData;
 		private boolean checkAmount;
@@ -54,6 +55,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private int amount;
 		private String name;
 		private String lore;
+		private String materialString;
 		private HashMap<Enchantment, Integer> enchantments;
 		private int hdbId;
 		
@@ -112,6 +114,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 		public String getLore() {
 			return this.lore;
+		}
+		
+		public String getMaterialString() {
+			return this.materialString;
+		}
+		
+		public void setMaterialString(String materialString) {
+			this.materialString = materialString;
 		}
 		
 		public void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
@@ -186,6 +196,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			this.checkLoreContains = checkLoreContains;
 		}
 		
+		public boolean shouldCheckMaterialContains() {
+			return this.checkMaterialContains;
+		}
+		
+		public void setCheckMaterialContains(boolean checkMaterialContains) {
+			this.checkMaterialContains = checkMaterialContains;
+		}
+		
 		public boolean shouldCheckType() {
 			return this.checkType;
 		}
@@ -217,6 +235,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		public void setCheckEnchantments(boolean checkEnchantments) {
 			this.checkEnchantments = checkEnchantments;
 		}
+		
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
@@ -319,6 +338,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					}
 				} else if (wrapper.shouldCheckNameEquals()) {
 					if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().equals(wrapper.getName()))) {
+						continue;
+					}
+				}
+				if (wrapper.shouldCheckMaterialContains()) {
+					if (!toCheck.getType().name().contains(wrapper.getMaterialString())) {
 						continue;
 					}
 				}
@@ -429,6 +453,12 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				part = part.replace("lorecontains:", "");
 				wrapper.setLore(part);
 				wrapper.setCheckLoreContains(true);
+				continue;
+			}
+			if (part.startsWith("matcontains:")) {
+				part = part.replace("matcontains:", "");
+				wrapper.setMaterialString(part);
+				wrapper.setCheckMaterialContains(true);
 				continue;
 			}
 			if (part.startsWith("enchantments:")) {
