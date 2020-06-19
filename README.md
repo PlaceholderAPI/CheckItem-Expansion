@@ -15,6 +15,7 @@
 - `lorecontains:<string>`
 - `matcontains:<string>`
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
+- `enchanted`
 - `strict`
 - `inhand`
 

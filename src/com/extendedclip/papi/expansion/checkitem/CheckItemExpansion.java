@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.8.2";
+		return "1.8.3";
 	}
 	
 	public class ItemWrapper {
@@ -47,6 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkType;
 		private boolean checkHand;
 		private boolean checkEnchantments;
+		private boolean checkEnchanted;
 		private boolean isStrict;
 		private boolean hdbItem;
 		private String material;
@@ -236,18 +238,26 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			this.checkEnchantments = checkEnchantments;
 		}
 		
+		public boolean shouldCheckEnchanted() {
+			return this.checkEnchanted;
+		}
+		
+		public void setCheckEnchanted(boolean checkEnchanted) {
+			this.checkEnchanted = checkEnchanted;
+		}
+		
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
 		ItemWrapper wrapper;
 		if (args.startsWith("amount_")) {
-			wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
+			wrapper = getWrapper(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
 			if (wrapper == null)
 				return null;
 			
 			return String.valueOf(getItemAmount(wrapper, p.getInventory().getContents()));
 		}
-		wrapper = getItem(ChatColor.translateAlternateColorCodes('&', args));
+		wrapper = getWrapper(ChatColor.translateAlternateColorCodes('&', args));
 		if (wrapper == null) {
 			return null;
 		}
@@ -294,7 +304,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	private int getItemAmount(ItemWrapper wrapper, ItemStack... items) {
 		int total = 0;
 		itemsLoop: for (ItemStack toCheck : items) {
-			if (toCheck != null) {
+			if (toCheck != null && toCheck.getType() != Material.AIR) {
 				if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
 					continue;
 				}
@@ -348,7 +358,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 				}
 				
 				if (wrapper.shouldCheckEnchantments()) {
-					if (toCheckMeta.getEnchants() == null)
+					if (toCheckMeta.getEnchants().isEmpty())
 						continue;
 					Map<Enchantment, Integer> toCheckEnchants;
 					if (toCheckMeta instanceof EnchantmentStorageMeta) {
@@ -363,6 +373,16 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 						if (e.getValue() != -1 && !(toCheckEnchants.get(e.getKey()) == e.getValue())) {
 							continue itemsLoop;
 						}
+					}
+				}
+				
+				if (wrapper.shouldCheckEnchanted() && toCheckMeta.getEnchants().isEmpty()) {
+					if (toCheckMeta instanceof EnchantmentStorageMeta) {
+						if (((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants().isEmpty()) {
+							continue;
+						}
+					} else {
+						continue;
 					}
 				}
 				
@@ -387,6 +407,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 		}
 		return total;
+		
 	}
 	
 	private int getInt(String s) {
@@ -397,7 +418,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		}
 	}
 	
-	private ItemWrapper getItem(String input) {
+	private ItemWrapper getWrapper(String input) {
 		ItemWrapper wrapper = new ItemWrapper();
 		String[] arrayOfString;
 		int j = (arrayOfString = input.split(",")).length;
@@ -499,6 +520,11 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 			if (part.equals("strict")) {
 				wrapper.setIsStrict(true);
+				continue;
+			}
+			if (part.equals("enchanted")) {
+				wrapper.setCheckEnchanted(true);
+				continue;
 			}
 			
 		}
