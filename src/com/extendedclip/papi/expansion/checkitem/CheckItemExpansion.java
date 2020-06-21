@@ -1,6 +1,8 @@
 package com.extendedclip.papi.expansion.checkitem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -32,7 +34,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.8.3";
+		return "1.9.0";
 	}
 	
 	public class ItemWrapper {
@@ -51,6 +53,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		private boolean checkEnchanted;
 		private boolean isStrict;
 		private boolean hdbItem;
+		private boolean remove;
 		private String material;
 		private short data;
 		private int customData;
@@ -65,6 +68,59 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			this.material = material.toUpperCase();
 			this.data = data;
 			this.amount = amt;
+		}
+		
+		@Override
+		public String toString() {
+			return "ItemWrapper [checkNameContains="
+					+ checkNameContains
+					+ ", checkNameStartsWith="
+					+ checkNameStartsWith
+					+ ", checkNameEquals="
+					+ checkNameEquals
+					+ ", checkLoreContains="
+					+ checkLoreContains
+					+ ", checkMaterialContains="
+					+ checkMaterialContains
+					+ ", checkDurability="
+					+ checkDurability
+					+ ", checkCustomData="
+					+ checkCustomData
+					+ ", checkAmount="
+					+ checkAmount
+					+ ", checkType="
+					+ checkType
+					+ ", checkHand="
+					+ checkHand
+					+ ", checkEnchantments="
+					+ checkEnchantments
+					+ ", checkEnchanted="
+					+ checkEnchanted
+					+ ", isStrict="
+					+ isStrict
+					+ ", hdbItem="
+					+ hdbItem
+					+ ", remove="
+					+ remove
+					+ ", material="
+					+ material
+					+ ", data="
+					+ data
+					+ ", customData="
+					+ customData
+					+ ", amount="
+					+ amount
+					+ ", name="
+					+ name
+					+ ", lore="
+					+ lore
+					+ ", materialString="
+					+ materialString
+					+ ", enchantments="
+					+ enchantments
+					+ ", hdbId="
+					+ hdbId
+					+ "]";
 		}
 		
 		public ItemWrapper() {
@@ -246,18 +302,30 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			this.checkEnchanted = checkEnchanted;
 		}
 		
+		public void setRemove(boolean remove) {
+			this.remove = remove;
+		}
+		
+		public boolean shouldRemove() {
+			return remove;
+		}
+		
 	}
 	
 	public String onPlaceholderRequest(Player p, String args) {
-		ItemWrapper wrapper;
+		ItemWrapper wrapper = new ItemWrapper();
+		ItemStack[] itemsToCheck;
+		boolean amount = false;
 		if (args.startsWith("amount_")) {
-			wrapper = getWrapper(ChatColor.translateAlternateColorCodes('&', args.replace("amount_", "")));
-			if (wrapper == null)
-				return null;
-			
-			return String.valueOf(getItemAmount(wrapper, p.getInventory().getContents()));
+			args = args.replace("amount_", "");
+			amount = true;
 		}
-		wrapper = getWrapper(ChatColor.translateAlternateColorCodes('&', args));
+		if (args.startsWith("remove_")) {
+			wrapper.setRemove(true);
+			args = args.replace("remove_", "");
+		}
+		wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args));
+		
 		if (wrapper == null) {
 			return null;
 		}
@@ -268,29 +336,29 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		if (wrapper.shouldCheckHand()) {
 			try {
 				Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
-				ItemStack[] hands = new ItemStack[2];
-				hands[0] = p.getInventory().getItemInMainHand();
-				hands[1] = p.getInventory().getItemInOffHand();
-				if (checkItem(wrapper, hands)) {
-					return PlaceholderAPIPlugin.booleanTrue();
-				}
-				return PlaceholderAPIPlugin.booleanFalse();
+				itemsToCheck = new ItemStack[2];
+				itemsToCheck[0] = p.getInventory().getItemInMainHand();
+				itemsToCheck[1] = p.getInventory().getItemInOffHand();
 			} catch (NoSuchMethodException e) {
-				if (checkItem(wrapper, p.getInventory().getItemInHand())) {
-					return PlaceholderAPIPlugin.booleanTrue();
-				}
-				return PlaceholderAPIPlugin.booleanFalse();
+				itemsToCheck = new ItemStack[1];
+				itemsToCheck[0] = p.getInventory().getItemInHand();
 			} catch (Exception e) {
-				return PlaceholderAPIPlugin.booleanFalse();
+				e.printStackTrace();
+				return "error";
 			}
+		} else {
+			itemsToCheck = p.getInventory().getContents();
 		}
-		ItemStack[] arrayOfItemStack = p.getInventory().getContents();
-		return checkItem(wrapper, arrayOfItemStack) ? PlaceholderAPIPlugin.booleanTrue()
-				: PlaceholderAPIPlugin.booleanFalse();
+		if (amount) {
+			return String.valueOf(getItemAmount(wrapper, p, itemsToCheck));
+		} else {
+			return checkItem(wrapper, p, itemsToCheck) ? PlaceholderAPIPlugin.booleanTrue()
+					: PlaceholderAPIPlugin.booleanFalse();
+		}
 	}
 	
-	private boolean checkItem(ItemWrapper wrapper, ItemStack... items) {
-		int total = getItemAmount(wrapper, items);
+	private boolean checkItem(ItemWrapper wrapper, Player p, ItemStack... items) {
+		int total = getItemAmount(wrapper, p, items);
 		if (wrapper.shouldCheckAmount()) {
 			if (wrapper.isStrict()) {
 				return total == wrapper.getAmount();
@@ -301,8 +369,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		return total >= 1;
 	}
 	
-	private int getItemAmount(ItemWrapper wrapper, ItemStack... items) {
+	private int getItemAmount(ItemWrapper wrapper, Player p, ItemStack... items) {
 		int total = 0;
+		List<ItemStack> matched = new ArrayList<ItemStack>();
 		itemsLoop: for (ItemStack toCheck : items) {
 			if (toCheck != null && toCheck.getType() != Material.AIR) {
 				if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
@@ -404,6 +473,22 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					}
 				}
 				total += toCheck.getAmount();
+				matched.add(toCheck);
+			}
+		}
+		if (wrapper.shouldRemove()) {
+			boolean remove = true;
+			if (wrapper.shouldCheckAmount()) {
+				if (wrapper.isStrict()) {
+					remove = total == wrapper.getAmount();
+				} else {
+					remove = total >= wrapper.getAmount();
+				}
+			}
+			if (remove) {
+				ItemStack[] matchedArr = new ItemStack[matched.size()];
+				matchedArr = matched.toArray(matchedArr);
+				p.getInventory().removeItem(matchedArr);
 			}
 		}
 		return total;
@@ -418,8 +503,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		}
 	}
 	
-	private ItemWrapper getWrapper(String input) {
-		ItemWrapper wrapper = new ItemWrapper();
+	private ItemWrapper getWrapper(ItemWrapper wrapper, String input) {
 		String[] arrayOfString;
 		int j = (arrayOfString = input.split(",")).length;
 		for (int i = 0; i < j; i++) {
