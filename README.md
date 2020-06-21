@@ -3,6 +3,7 @@
 **Placeholder:**
 - `%checkitem_<modifier1>,<modifier2>,<...>%` - Returns if user has the item
 - `%checkitem_amount_<modifier1>,<modifier2>,<...>%` - Returns amount of items the user has
+- `%checkitem_remove_<modifier1>,<modifier2>,<...>%` - Removes the items from the players inventory - Can be used with amount, it just has to be after. (Ex. `%checkitem_amount_remove_<...>%`)
 
 **Modifiers:**
 - `namecontains:<string>`
