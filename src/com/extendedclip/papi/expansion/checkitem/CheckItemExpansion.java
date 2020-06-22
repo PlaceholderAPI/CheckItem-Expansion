@@ -34,7 +34,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.9.0";
+		return "1.9.1";
 	}
 	
 	public class ItemWrapper {
@@ -487,8 +487,24 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 			if (remove) {
 				ItemStack[] matchedArr = new ItemStack[matched.size()];
-				matchedArr = matched.toArray(matchedArr);
-				p.getInventory().removeItem(matchedArr);
+				if (wrapper.checkAmount) {
+					int remaining = wrapper.getAmount();
+					for (int i = 0; i < matched.size(); i++) {
+						ItemStack item = matched.get(i);
+						int match = p.getInventory().first(item);
+						ItemStack matchedItem = p.getInventory().getItem(match);
+						if (matchedItem.getAmount() >= remaining) {
+							matchedItem.setAmount(matchedItem.getAmount() - remaining);
+							remaining = 0;
+							break;
+						} else {
+							remaining -= matchedItem.getAmount();
+							matchedItem.setAmount(0);
+						}
+					}
+				} else {
+					p.getInventory().removeItem(matched.toArray(matchedArr));
+				}
 			}
 		}
 		return total;
