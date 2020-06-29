@@ -21,3 +21,5 @@
 - `inhand`
 
 Ex: `%checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%`
+
+**PAPI Placeholders work, you just need to put them in `{}` instead of `%%`**

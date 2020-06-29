@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -34,7 +35,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 	}
 	
 	public String getVersion() {
-		return "1.9.1";
+		return "1.9.2";
 	}
 	
 	public class ItemWrapper {
@@ -324,7 +325,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			wrapper.setRemove(true);
 			args = args.replace("remove_", "");
 		}
-		wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args));
+		wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
 		
 		if (wrapper == null) {
 			return null;
@@ -519,7 +520,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		}
 	}
 	
-	private ItemWrapper getWrapper(ItemWrapper wrapper, String input) {
+	private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
 		String[] arrayOfString;
 		int j = (arrayOfString = input.split(",")).length;
 		for (int i = 0; i < j; i++) {
@@ -527,7 +528,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			if (part.startsWith("data:")) {
 				part = part.replace("data:", "");
 				try {
-					wrapper.setDurability(Short.parseShort(part));
+					wrapper.setDurability(Short.parseShort(PlaceholderAPI.setBracketPlaceholders(p, part)));
 					wrapper.setCheckDurability(true);
 					continue;
 				} catch (Exception localException1) {
@@ -536,49 +537,49 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			}
 			if (part.startsWith("custommodeldata:")) {
 				part = part.replace("custommodeldata:", "");
-				wrapper.setCustomData(getInt(part));
+				wrapper.setCustomData(getInt(PlaceholderAPI.setBracketPlaceholders(p, part)));
 				wrapper.setCheckCustomData(true);
 				continue;
 			}
 			if (part.startsWith("mat:")) {
 				part = part.replace("mat:", "");
-				wrapper.setType(part);
+				wrapper.setType(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckType(true);
 				continue;
 			}
 			if (part.startsWith("amt:")) {
 				part = part.replace("amt:", "");
-				wrapper.setAmount(getInt(part));
+				wrapper.setAmount(getInt(PlaceholderAPI.setBracketPlaceholders(p, part)));
 				wrapper.setCheckAmount(true);
 				continue;
 			}
 			if (part.startsWith("namestartswith:")) {
 				part = part.replace("namestartswith:", "");
-				wrapper.setName(part);
+				wrapper.setName(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckNameStartsWith(true);
 				continue;
 			}
 			if (part.startsWith("namecontains:")) {
 				part = part.replace("namecontains:", "");
-				wrapper.setName(part);
+				wrapper.setName(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckNameContains(true);
 				continue;
 			}
 			if (part.startsWith("nameequals:")) {
 				part = part.replace("nameequals:", "");
-				wrapper.setName(part);
+				wrapper.setName(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckNameEquals(true);
 				continue;
 			}
 			if (part.startsWith("lorecontains:")) {
 				part = part.replace("lorecontains:", "");
-				wrapper.setLore(part);
+				wrapper.setLore(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckLoreContains(true);
 				continue;
 			}
 			if (part.startsWith("matcontains:")) {
 				part = part.replace("matcontains:", "");
-				wrapper.setMaterialString(part);
+				wrapper.setMaterialString(PlaceholderAPI.setBracketPlaceholders(p, part));
 				wrapper.setCheckMaterialContains(true);
 				continue;
 			}
@@ -591,10 +592,12 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 					for (String s : enchArray) {
 						String[] ench;
 						if ((ench = s.split("=")).length > 1) {
-							NamespacedKey key = NamespacedKey.minecraft(ench[0].toLowerCase());
+							NamespacedKey key = NamespacedKey
+									.minecraft(PlaceholderAPI.setBracketPlaceholders(p, ench[0].toLowerCase()));
 							enchantments.put(Enchantment.getByKey(key), Integer.valueOf(ench[1]));
 						} else {
-							NamespacedKey key = NamespacedKey.minecraft(s.toLowerCase());
+							NamespacedKey key = NamespacedKey
+									.minecraft(PlaceholderAPI.setBracketPlaceholders(p, s.toLowerCase()));
 							enchantments.put(Enchantment.getByKey(key), -1);
 						}
 					}
