@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -313,7 +314,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 		
 	}
 	
-	public String onPlaceholderRequest(Player p, String args) {
+	public String onRequest(OfflinePlayer p, String args) {
+		Player player = (Player) p;
 		ItemWrapper wrapper = new ItemWrapper();
 		ItemStack[] itemsToCheck;
 		boolean amount = false;
@@ -325,35 +327,35 @@ public class CheckItemExpansion extends PlaceholderExpansion {
 			wrapper.setRemove(true);
 			args = args.replace("remove_", "");
 		}
-		wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
+		wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), player);
 		
 		if (wrapper == null) {
 			return null;
 		}
 		if (wrapper.shouldCheckType() && wrapper.getType().equals("AIR")) {
-			return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
+			return player.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
 					: PlaceholderAPIPlugin.booleanTrue();
 		}
 		if (wrapper.shouldCheckHand()) {
 			try {
 				Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
 				itemsToCheck = new ItemStack[2];
-				itemsToCheck[0] = p.getInventory().getItemInMainHand();
-				itemsToCheck[1] = p.getInventory().getItemInOffHand();
+				itemsToCheck[0] = player.getInventory().getItemInMainHand();
+				itemsToCheck[1] = player.getInventory().getItemInOffHand();
 			} catch (NoSuchMethodException e) {
 				itemsToCheck = new ItemStack[1];
-				itemsToCheck[0] = p.getInventory().getItemInHand();
+				itemsToCheck[0] = player.getInventory().getItemInHand();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return "error";
 			}
 		} else {
-			itemsToCheck = p.getInventory().getContents();
+			itemsToCheck = player.getInventory().getContents();
 		}
 		if (amount) {
-			return String.valueOf(getItemAmount(wrapper, p, itemsToCheck));
+			return String.valueOf(getItemAmount(wrapper, player, itemsToCheck));
 		} else {
-			return checkItem(wrapper, p, itemsToCheck) ? PlaceholderAPIPlugin.booleanTrue()
+			return checkItem(wrapper, player, itemsToCheck) ? PlaceholderAPIPlugin.booleanTrue()
 					: PlaceholderAPIPlugin.booleanFalse();
 		}
 	}
