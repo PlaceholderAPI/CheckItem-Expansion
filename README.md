@@ -17,6 +17,9 @@
 - `matcontains:<string>`
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
 - `enchanted`
+- `potiontype:<potiontype>`
+- `potionextended`
+- `potionupgraded`
 - `strict`
 - `inhand`
 
