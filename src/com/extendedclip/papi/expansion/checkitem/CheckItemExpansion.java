@@ -38,7 +38,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "1.9.4";
+    return "1.9.5";
   }
   
   public class ItemWrapper {
@@ -70,6 +70,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     private String materialString;
     private HashMap<Enchantment, Integer> enchantments;
     private PotionType potionType;
+    private boolean potionExtended;
+    private boolean potionUpgraded;
     private int hdbId;
     
     public ItemWrapper(String material, short data, int amt) {
@@ -210,6 +212,22 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     
     public void setPotionType(PotionType potionType) {
       this.potionType = potionType;
+    }
+    
+    public boolean getPotionExtended() {
+      return this.potionExtended;
+    }
+    
+    public void setPotionExtended(boolean potioExtended) {
+      this.potionExtended = potionExtended;
+    }
+    
+    public boolean getPotionUpgraded() {
+      return this.potionUpgraded;
+    }
+    
+    public void setPotionUpgraded(boolean potionUpgraded) {
+      this.potionUpgraded = potionUpgraded;
     }
     
     public void setHdbId(int id) {
@@ -500,9 +518,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
           if (wrapper.shouldCheckPotionType()
               && (potionData.getType() == null || potionData.getType() != wrapper.getPotionType()))
             continue;
-          if (wrapper.shouldCheckPotionExtended() && !potionData.isExtended())
+          if (wrapper.shouldCheckPotionExtended() && potionData.isExtended() != wrapper.getPotionExtended())
             continue;
-          if (wrapper.shouldCheckPotionUpgraded() && !potionData.isUpgraded())
+          if (wrapper.shouldCheckPotionUpgraded() && potionData.isUpgraded() != wrapper.getPotionUpgraded())
             continue;
         }
         
@@ -685,12 +703,16 @@ public class CheckItemExpansion extends PlaceholderExpansion {
         wrapper.setCheckPotionType(true);
         continue;
       }
-      if (part.startsWith("potionextended")) {
+      if (part.startsWith("potionextended:")) {
+        part = part.replace("potionextended:", "");
+        wrapper.setPotionExtended(Boolean.parseBoolean(part));
         wrapper.setCheckPotionExtended(true);
         continue;
       }
-      if (part.startsWith("potionupgraded")) {
+      if (part.startsWith("potionupgraded:")) {
+        part = part.replace("potionupgraded:", "");
         wrapper.setCheckPotionUpgraded(true);
+        wrapper.setPotionUpgraded(Boolean.parseBoolean(part));
         continue;
       }
       if (part.equals("inhand")) {

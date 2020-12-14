@@ -18,8 +18,8 @@
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
 - `enchanted`
 - `potiontype:<potiontype>`
-- `potionextended`
-- `potionupgraded`
+- `potionextended:<boolean>`
+- `potionupgraded:<boolean>`
 - `strict`
 - `inhand`
 
