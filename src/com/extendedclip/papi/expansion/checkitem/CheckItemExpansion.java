@@ -38,7 +38,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "1.9.5";
+    return "1.9.6";
   }
   
   public class ItemWrapper {
