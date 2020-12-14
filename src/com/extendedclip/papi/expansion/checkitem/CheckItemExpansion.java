@@ -218,7 +218,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
       return this.potionExtended;
     }
     
-    public void setPotionExtended(boolean potioExtended) {
+    public void setPotionExtended(boolean potionExtended) {
       this.potionExtended = potionExtended;
     }
     
