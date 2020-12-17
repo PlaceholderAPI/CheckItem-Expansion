@@ -452,12 +452,20 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   private String giveItem(ItemWrapper wrapper, Player p) {
     ItemStack item = new ItemStack(Material.getMaterial(wrapper.getType()));
     ItemMeta meta = item.getItemMeta();
-    if (wrapper.shouldCheckDurability())
-      if (meta instanceof Damageable) {
-        Damageable dmg = (Damageable) meta;
-        dmg.setDamage(wrapper.getDurability());
+    if (wrapper.shouldCheckDurability()) {
+      try {
+        Class.forName("org.bukkit.inventory.meta.Damageable");
+        if (meta instanceof Damageable) {
+          Damageable dmg = (Damageable) meta;
+          dmg.setDamage(wrapper.getDurability());
+        }
+      } catch (ClassNotFoundException e) {
+        item.setDurability(wrapper.getDurability());
+      } catch (Exception e) {
+        e.printStackTrace();
+        return "error";
       }
-    item.setDurability(wrapper.getDurability());
+    }
     if (wrapper.shouldCheckCustomData()) {
       meta.setCustomModelData(wrapper.getCustomData());
     }
