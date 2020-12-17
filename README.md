@@ -14,6 +14,7 @@
 - `data:<integer>`
 - `custommodeldata:<integer>`
 - `lorecontains:<string>`
+- `loreequals:<string>` (Separate lines with `|`)
 - `matcontains:<string>`
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)
 - `enchanted`

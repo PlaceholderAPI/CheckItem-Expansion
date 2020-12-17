@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -48,6 +50,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     private boolean checkNameStartsWith;
     private boolean checkNameEquals;
     private boolean checkLoreContains;
+    private boolean checkLoreEquals;
     private boolean checkMaterialContains;
     private boolean checkDurability;
     private boolean checkCustomData;
@@ -91,6 +94,8 @@ public class CheckItemExpansion extends PlaceholderExpansion {
           + checkNameEquals
           + ", checkLoreContains="
           + checkLoreContains
+          + ", checkLoreEquals="
+          + checkLoreEquals
           + ", checkMaterialContains="
           + checkMaterialContains
           + ", checkDurability="
@@ -299,6 +304,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
       this.checkLoreContains = checkLoreContains;
     }
     
+    public boolean shouldCheckLoreEquals() {
+      return this.checkLoreEquals;
+    }
+    
+    public void setCheckLoreEquals(boolean checkLoreEquals) {
+      this.checkLoreEquals = checkLoreEquals;
+    }
+    
     public boolean shouldCheckMaterialContains() {
       return this.checkMaterialContains;
     }
@@ -435,6 +448,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     }
   }
   
+  @SuppressWarnings("deprecation")
   private String giveItem(ItemWrapper wrapper, Player p) {
     ItemStack item = new ItemStack(Material.getMaterial(wrapper.getType()));
     ItemMeta meta = item.getItemMeta();
@@ -449,6 +463,10 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     }
     if (wrapper.shouldCheckNameEquals())
       meta.setDisplayName(wrapper.getName());
+    if (wrapper.shouldCheckLoreEquals()) {
+      List<String> lore = Stream.of(wrapper.getLore().split("\\|", -1)).collect(Collectors.toList());
+      meta.setLore(lore);
+    }
     if (wrapper.shouldCheckEnchantments()) {
       for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
         meta.addEnchant(e.getKey(), (e.getValue() == -1 ? 1 : e.getValue()), true);
@@ -539,6 +557,13 @@ public class CheckItemExpansion extends PlaceholderExpansion {
           if (!loreContains) {
             continue;
           }
+        }
+        if (wrapper.shouldCheckLoreEquals()) {
+          if (!toCheckMeta.hasLore())
+            continue;
+          String lore = String.join("|", toCheckMeta.getLore());
+          if (!wrapper.getLore().equals(lore))
+            continue;
         }
         if (wrapper.shouldCheckNameContains()) {
           if (!(toCheckMeta.hasDisplayName() && toCheckMeta.getDisplayName().contains(wrapper.getName()))) {
@@ -723,6 +748,12 @@ public class CheckItemExpansion extends PlaceholderExpansion {
         part = part.replace("lorecontains:", "");
         wrapper.setLore(PlaceholderAPI.setBracketPlaceholders(p, part));
         wrapper.setCheckLoreContains(true);
+        continue;
+      }
+      if (part.startsWith("loreequals:")) {
+        part = part.replace("loreequals:", "");
+        wrapper.setLore(PlaceholderAPI.setBracketPlaceholders(p, part));
+        wrapper.setCheckLoreEquals(true);
         continue;
       }
       if (part.startsWith("matcontains:")) {
