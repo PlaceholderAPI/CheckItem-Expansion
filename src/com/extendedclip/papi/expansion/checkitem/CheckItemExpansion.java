@@ -475,7 +475,6 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     if (wrapper.shouldCheckPotionType()) {
       if (meta instanceof PotionMeta) {
         PotionMeta potionMeta = (PotionMeta) meta;
-        PotionData potionData = new PotionData(wrapper.getPotionType());
         potionMeta.setBasePotionData(
             new PotionData(wrapper.getPotionType(), wrapper.getPotionExtended(), wrapper.getPotionUpgraded()));
       }
