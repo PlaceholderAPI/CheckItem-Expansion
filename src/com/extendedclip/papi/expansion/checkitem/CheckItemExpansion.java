@@ -13,6 +13,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -38,7 +39,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "1.9.6";
+    return "2.0.0";
   }
   
   public class ItemWrapper {
@@ -130,10 +131,14 @@ public class CheckItemExpansion extends PlaceholderExpansion {
           + enchantments
           + ", potionType="
           + potionType
-          + ", potionExtended="
+          + ", checkPotionExtended="
           + checkPotionExtended
-          + ", potionUpgraded="
+          + ", potionExtended="
+          + potionExtended
+          + ", checkPotionUpgraded="
           + checkPotionUpgraded
+          + ", potionUpgraded="
+          + potionUpgraded
           + ", hdbId="
           + hdbId
           + "]";
@@ -376,10 +381,19 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     
   }
   
+  @SuppressWarnings("deprecation")
   public String onPlaceholderRequest(Player p, String args) {
     ItemWrapper wrapper = new ItemWrapper();
     ItemStack[] itemsToCheck;
     boolean amount = false;
+    if (args.startsWith("give_")) {
+      args = args.replace("give_", "");
+      wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
+      if (wrapper == null) {
+        return null;
+      }
+      return giveItem(wrapper, p);
+    }
     if (args.startsWith("amount_")) {
       args = args.replace("amount_", "");
       amount = true;
@@ -421,6 +435,60 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     }
   }
   
+  private String giveItem(ItemWrapper wrapper, Player p) {
+    ItemStack item = new ItemStack(Material.getMaterial(wrapper.getType()));
+    ItemMeta meta = item.getItemMeta();
+    if (wrapper.shouldCheckDurability())
+      if (meta instanceof Damageable) {
+        Damageable dmg = (Damageable) meta;
+        dmg.setDamage(wrapper.getDurability());
+      }
+    item.setDurability(wrapper.getDurability());
+    if (wrapper.shouldCheckCustomData()) {
+      meta.setCustomModelData(wrapper.getCustomData());
+    }
+    if (wrapper.shouldCheckNameEquals())
+      meta.setDisplayName(wrapper.getName());
+    if (wrapper.shouldCheckEnchantments()) {
+      for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
+        meta.addEnchant(e.getKey(), (e.getValue() == -1 ? 1 : e.getValue()), true);
+      }
+    }
+    if (wrapper.shouldCheckPotionType()) {
+      if (meta instanceof PotionMeta) {
+        PotionMeta potionMeta = (PotionMeta) meta;
+        PotionData potionData = new PotionData(wrapper.getPotionType());
+        potionMeta.setBasePotionData(
+            new PotionData(wrapper.getPotionType(), wrapper.getPotionExtended(), wrapper.getPotionUpgraded()));
+      }
+    }
+    item.setItemMeta(meta);
+    
+    if (wrapper.shouldCheckAmount()) {
+      int remaining = wrapper.getAmount();
+      while (remaining > 0) {
+        HashMap<Integer, ItemStack> returned;
+        if (remaining > 64) {
+          item.setAmount(64);
+          returned = p.getInventory().addItem(item);
+          remaining -= 64;
+        } else {
+          item.setAmount(remaining);
+          returned = p.getInventory().addItem(item);
+          remaining = 0;
+        }
+        if (!returned.isEmpty()) {
+          for (Entry<Integer, ItemStack> e : returned.entrySet()) {
+            return (e.getValue().getAmount() + remaining) + "";
+          }
+        }
+      }
+    } else {
+      p.getInventory().addItem(item);
+    }
+    return "yes";
+  }
+  
   private boolean checkItem(ItemWrapper wrapper, Player p, ItemStack... items) {
     int total = getItemAmount(wrapper, p, items);
     if (wrapper.shouldCheckAmount()) {
@@ -433,6 +501,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     return total >= 1;
   }
   
+  @SuppressWarnings("deprecation")
   private int getItemAmount(ItemWrapper wrapper, Player p, ItemStack... items) {
     int total = 0;
     List<ItemStack> matched = new ArrayList<ItemStack>();
@@ -598,6 +667,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     }
   }
   
+  @SuppressWarnings("deprecation")
   private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
     String[] arrayOfString;
     int j = (arrayOfString = input.split(",")).length;
@@ -697,7 +767,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
       if (part.startsWith("potiontype:")) {
         part = part.replace("potiontype:", "");
         try {
-          wrapper.setPotionType(PotionType.valueOf(part));
+          wrapper.setPotionType(PotionType.valueOf(part.toUpperCase()));
         } catch (IllegalArgumentException e) {
         }
         wrapper.setCheckPotionType(true);
