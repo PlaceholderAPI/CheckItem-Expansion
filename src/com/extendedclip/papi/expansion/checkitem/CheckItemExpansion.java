@@ -41,7 +41,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "2.0.0";
+    return "2.0.1";
   }
   
   public class ItemWrapper {
@@ -702,9 +702,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   @SuppressWarnings("deprecation")
   private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
     String[] arrayOfString;
-    int j = (arrayOfString = input.split(",")).length;
+    int j = (arrayOfString = input.split("(?<!\\\\),")).length;
     for (int i = 0; i < j; i++) {
-      String part = arrayOfString[i];
+      String part = arrayOfString[i].replaceAll("\\\\,", ",");
       if (part.startsWith("data:")) {
         part = part.replace("data:", "");
         try {
