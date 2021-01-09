@@ -41,7 +41,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "2.0.2";
+    return "2.0.3";
   }
   
   public class ItemWrapper {
@@ -594,12 +594,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
         if (wrapper.shouldCheckEnchantments()) {
           if (toCheckMeta.getEnchants().isEmpty())
             continue;
-          Map<Enchantment, Integer> toCheckEnchants;
-          if (toCheckMeta instanceof EnchantmentStorageMeta) {
-            toCheckEnchants = ((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants();
-          } else {
-            toCheckEnchants = toCheckMeta.getEnchants();
-          }
+          Map<Enchantment, Integer> toCheckEnchants = toCheckMeta.getEnchants();
           for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
             if (!toCheckEnchants.containsKey(e.getKey())) {
               continue itemsLoop;
