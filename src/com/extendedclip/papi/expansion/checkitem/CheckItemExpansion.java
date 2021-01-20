@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -41,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "2.0.3";
+    return "2.0.4";
   }
   
   public class ItemWrapper {
@@ -664,6 +665,22 @@ public class CheckItemExpansion extends PlaceholderExpansion {
         ItemStack[] matchedArr = new ItemStack[matched.size()];
         if (wrapper.shouldCheckAmount()) {
           int remaining = wrapper.getAmount();
+          Bukkit.getLogger().info(remaining + "");
+          ItemStack[] armor = p.getInventory().getArmorContents();
+          for (int i = 0; i < armor.length; i++) {
+            if (matched.contains(armor[i])) {
+              if (armor[i].getAmount() > remaining) {
+                armor[i].setAmount(armor[i].getAmount() - remaining);
+                remaining = 0;
+                break;
+              } else {
+                remaining -= armor[i].getAmount();
+                armor[i] = null;
+              }
+            }
+            Bukkit.getLogger().info("2: " + remaining + "");
+          }
+          p.getInventory().setArmorContents(armor);
           for (int i = 0; i < matched.size() && remaining > 0; i++) {
             ItemStack item = matched.get(i);
             int match = p.getInventory().first(item);
@@ -682,6 +699,13 @@ public class CheckItemExpansion extends PlaceholderExpansion {
           }
         } else {
           p.getInventory().removeItem(matched.toArray(matchedArr));
+          ItemStack[] armor = p.getInventory().getArmorContents();
+          for (int i = 0; i < armor.length; i++) {
+            if (matched.contains(armor[i])) {
+              armor[i] = null;
+            }
+          }
+          p.getInventory().setArmorContents(armor);
         }
       }
     }
