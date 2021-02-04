@@ -41,7 +41,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "2.0.5";
+    return "2.0.6";
   }
   
   public class ItemWrapper {
@@ -805,7 +805,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
               enchantments.put(Enchantment.getByKey(key), -1);
             }
           }
-        } catch (NoSuchMethodException e) {
+        } catch (NoSuchMethodException | NoClassDefFoundError e) {
           for (String s : enchArray) {
             String[] ench;
             if ((ench = s.split("=")).length > 1) {
