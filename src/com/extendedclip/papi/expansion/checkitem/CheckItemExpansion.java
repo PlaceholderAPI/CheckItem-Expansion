@@ -24,9 +24,10 @@ import org.bukkit.potion.PotionType;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
+import me.clip.placeholderapi.expansion.Configurable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
-public class CheckItemExpansion extends PlaceholderExpansion {
+public class CheckItemExpansion extends PlaceholderExpansion implements Configurable {
   
   public boolean canRegister() {
     return true;
@@ -41,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion {
   }
   
   public String getVersion() {
-    return "2.0.6";
+    return "2.1.0";
   }
   
   public class ItemWrapper {
@@ -400,6 +401,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
     ItemStack[] itemsToCheck;
     boolean amount = false;
     if (args.startsWith("give_")) {
+      if (!((boolean) get("give_enabled", true))) {
+        return "Give placeholders have been disabled. Check PlaceholderAPI Config.";
+      }
       args = args.replace("give_", "");
       wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
       if (wrapper == null) {
@@ -412,6 +416,9 @@ public class CheckItemExpansion extends PlaceholderExpansion {
       amount = true;
     }
     if (args.startsWith("remove_")) {
+      if (!((boolean) get("remove_enabled", true))) {
+        return "Remove placeholders have been disabled. Check PlaceholderAPI Config.";
+      }
       wrapper.setRemove(true);
       args = args.replace("remove_", "");
     }
@@ -857,5 +864,13 @@ public class CheckItemExpansion extends PlaceholderExpansion {
       
     }
     return wrapper;
+  }
+  
+  @Override
+  public Map<String, Object> getDefaults() {
+    Map<String, Object> defaults = new HashMap<>();
+    defaults.put("give_enabled", true);
+    defaults.put("remove_enabled", true);
+    return defaults;
   }
 }
