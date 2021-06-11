@@ -24,6 +24,7 @@
 - `potionupgraded:<boolean>`*
 - `strict`
 - `inhand`
+- `inslot:<integer>` [Valid Slots](https://proxy.spigotmc.org/d3e11b631e22f45fc07c3fcd1c7000b2245fed78?url=http%3A%2F%2Fi.imgur.com%2F3YCrfC8.png)
 
 Ex: `%checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%`
 

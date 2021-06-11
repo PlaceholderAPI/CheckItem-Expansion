@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.1.0";
+    return "2.2.0";
   }
   
   public class ItemWrapper {
@@ -78,11 +78,17 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean potionExtended;
     private boolean potionUpgraded;
     private int hdbId;
+    private int slot;
     
     public ItemWrapper(String material, short data, int amt) {
       this.material = material.toUpperCase();
       this.data = data;
       this.amount = amt;
+      slot = -1;
+    }
+    
+    public ItemWrapper() {
+      slot = -1;
     }
     
     @Override
@@ -147,17 +153,16 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + potionUpgraded
           + ", hdbId="
           + hdbId
+          + ", slot="
+          + slot
           + "]";
-    }
-    
-    public ItemWrapper() {
     }
     
     public String getType() {
       return this.material;
     }
     
-    public void setType(String material) {
+    protected void setType(String material) {
       this.material = material.toUpperCase();
     }
     
@@ -165,7 +170,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.data;
     }
     
-    public void setDurability(short durability) {
+    protected void setDurability(short durability) {
       this.data = durability;
     }
     
@@ -173,7 +178,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.customData;
     }
     
-    public void setCustomData(int customData) {
+    protected void setCustomData(int customData) {
       this.customData = customData;
     }
     
@@ -181,7 +186,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.amount;
     }
     
-    public void setAmount(int amount) {
+    protected void setAmount(int amount) {
       this.amount = amount;
     }
     
@@ -189,27 +194,27 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.name;
     }
     
-    public void setName(String name) {
+    protected void setName(String name) {
       this.name = name;
-    }
-    
-    public void setLore(String lore) {
-      this.lore = lore;
     }
     
     public String getLore() {
       return this.lore;
     }
     
+    protected void setLore(String lore) {
+      this.lore = lore;
+    }
+    
     public String getMaterialString() {
       return this.materialString;
     }
     
-    public void setMaterialString(String materialString) {
+    protected void setMaterialString(String materialString) {
       this.materialString = materialString;
     }
     
-    public void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
+    protected void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
       this.enchantments = enchantments;
     }
     
@@ -217,31 +222,31 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.enchantments;
     }
     
+    protected void setPotionType(PotionType potionType) {
+      this.potionType = potionType;
+    }
+    
     public PotionType getPotionType() {
       return this.potionType;
     }
     
-    public void setPotionType(PotionType potionType) {
-      this.potionType = potionType;
+    protected void setPotionExtended(boolean potionExtended) {
+      this.potionExtended = potionExtended;
     }
     
     public boolean getPotionExtended() {
       return this.potionExtended;
     }
     
-    public void setPotionExtended(boolean potionExtended) {
-      this.potionExtended = potionExtended;
+    protected void setPotionUpgraded(boolean potionUpgraded) {
+      this.potionUpgraded = potionUpgraded;
     }
     
     public boolean getPotionUpgraded() {
       return this.potionUpgraded;
     }
     
-    public void setPotionUpgraded(boolean potionUpgraded) {
-      this.potionUpgraded = potionUpgraded;
-    }
-    
-    public void setHdbId(int id) {
+    protected void setHdbId(int id) {
       this.hdbId = id;
     }
     
@@ -249,148 +254,156 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.hdbId;
     }
     
+    protected void setCheckDurability(boolean checkDurability) {
+      this.checkDurability = checkDurability;
+    }
+    
     public boolean shouldCheckDurability() {
       return this.checkDurability;
     }
     
-    public void setCheckDurability(boolean checkDurability) {
-      this.checkDurability = checkDurability;
+    protected void setCheckCustomData(boolean checkCustomData) {
+      this.checkCustomData = checkCustomData;
     }
     
     public boolean shouldCheckCustomData() {
       return this.checkCustomData;
     }
     
-    public void setCheckCustomData(boolean checkCustomData) {
-      this.checkCustomData = checkCustomData;
+    protected void setCheckAmount(boolean checkAmount) {
+      this.checkAmount = checkAmount;
     }
     
     public boolean shouldCheckAmount() {
       return this.checkAmount;
     }
     
-    public void setCheckAmount(boolean checkAmount) {
-      this.checkAmount = checkAmount;
+    protected void setCheckNameContains(boolean checkNameContains) {
+      this.checkNameContains = checkNameContains;
     }
     
     public boolean shouldCheckNameContains() {
       return this.checkNameContains;
     }
     
-    public void setCheckNameContains(boolean checkNameContains) {
-      this.checkNameContains = checkNameContains;
+    protected void setCheckNameStartsWith(boolean checkNameStartsWith) {
+      this.checkNameStartsWith = checkNameStartsWith;
     }
     
     public boolean shouldCheckNameStartsWith() {
       return this.checkNameStartsWith;
     }
     
-    public void setCheckNameStartsWith(boolean checkNameStartsWith) {
-      this.checkNameStartsWith = checkNameStartsWith;
+    protected void setCheckNameEquals(boolean checkNameEquals) {
+      this.checkNameEquals = checkNameEquals;
     }
     
     public boolean shouldCheckNameEquals() {
       return this.checkNameEquals;
     }
     
-    public void setCheckNameEquals(boolean checkNameEquals) {
-      this.checkNameEquals = checkNameEquals;
+    protected void setCheckLoreContains(boolean checkLoreContains) {
+      this.checkLoreContains = checkLoreContains;
     }
     
     public boolean shouldCheckLoreContains() {
       return this.checkLoreContains;
     }
     
-    public void setCheckLoreContains(boolean checkLoreContains) {
-      this.checkLoreContains = checkLoreContains;
+    protected void setCheckLoreEquals(boolean checkLoreEquals) {
+      this.checkLoreEquals = checkLoreEquals;
     }
     
     public boolean shouldCheckLoreEquals() {
       return this.checkLoreEquals;
     }
     
-    public void setCheckLoreEquals(boolean checkLoreEquals) {
-      this.checkLoreEquals = checkLoreEquals;
+    protected void setCheckMaterialContains(boolean checkMaterialContains) {
+      this.checkMaterialContains = checkMaterialContains;
     }
     
     public boolean shouldCheckMaterialContains() {
       return this.checkMaterialContains;
     }
     
-    public void setCheckMaterialContains(boolean checkMaterialContains) {
-      this.checkMaterialContains = checkMaterialContains;
+    protected void setCheckType(boolean checkType) {
+      this.checkType = checkType;
     }
     
     public boolean shouldCheckType() {
       return this.checkType;
     }
     
-    public void setCheckType(boolean checkType) {
-      this.checkType = checkType;
+    protected void setCheckHand(boolean checkHand) {
+      this.checkHand = checkHand;
     }
     
     public boolean shouldCheckHand() {
       return this.checkHand;
     }
     
-    public void setCheckHand(boolean checkHand) {
-      this.checkHand = checkHand;
+    protected void setIsStrict(boolean isStrict) {
+      this.isStrict = isStrict;
     }
     
     public boolean isStrict() {
       return this.isStrict;
     }
     
-    public void setIsStrict(boolean isStrict) {
-      this.isStrict = isStrict;
+    protected void setCheckEnchantments(boolean checkEnchantments) {
+      this.checkEnchantments = checkEnchantments;
     }
     
     public boolean shouldCheckEnchantments() {
       return this.checkEnchantments;
     }
     
-    public void setCheckEnchantments(boolean checkEnchantments) {
-      this.checkEnchantments = checkEnchantments;
+    protected void setCheckEnchanted(boolean checkEnchanted) {
+      this.checkEnchanted = checkEnchanted;
     }
     
     public boolean shouldCheckEnchanted() {
       return this.checkEnchanted;
     }
     
-    public void setCheckEnchanted(boolean checkEnchanted) {
-      this.checkEnchanted = checkEnchanted;
+    protected void setCheckPotionType(boolean checkPotionType) {
+      this.checkPotionType = checkPotionType;
     }
     
     public boolean shouldCheckPotionType() {
       return this.checkPotionType;
     }
     
-    public void setCheckPotionType(boolean checkPotionType) {
-      this.checkPotionType = checkPotionType;
+    protected void setCheckPotionExtended(boolean checkPotionExtended) {
+      this.checkPotionExtended = checkPotionExtended;
     }
     
     public boolean shouldCheckPotionExtended() {
       return this.checkPotionExtended;
     }
     
-    public void setCheckPotionExtended(boolean checkPotionExtended) {
-      this.checkPotionExtended = checkPotionExtended;
+    protected void setCheckPotionUpgraded(boolean checkPotionUpgraded) {
+      this.checkPotionUpgraded = checkPotionUpgraded;
     }
     
     public boolean shouldCheckPotionUpgraded() {
       return this.checkPotionUpgraded;
     }
     
-    public void setCheckPotionUpgraded(boolean checkPotionUpgraded) {
-      this.checkPotionUpgraded = checkPotionUpgraded;
-    }
-    
-    public void setRemove(boolean remove) {
+    protected void setRemove(boolean remove) {
       this.remove = remove;
     }
     
     public boolean shouldRemove() {
       return remove;
+    }
+    
+    protected void setSlot(int slot) {
+      this.slot = slot;
+    }
+    
+    public int getSlot() {
+      return slot;
     }
     
   }
@@ -427,26 +440,31 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     if (wrapper == null) {
       return null;
     }
-    if (wrapper.shouldCheckType() && wrapper.getType().equals("AIR")) {
-      return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
-          : PlaceholderAPIPlugin.booleanTrue();
-    }
     if (wrapper.shouldCheckHand()) {
       try {
         Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
         itemsToCheck = new ItemStack[2];
-        itemsToCheck[0] = p.getInventory().getItemInMainHand();
-        itemsToCheck[1] = p.getInventory().getItemInOffHand();
+        itemsToCheck[0] = p.getInventory().getItem(p.getInventory().getHeldItemSlot());
+        itemsToCheck[1] = p.getInventory().getItem(40);
+        
       } catch (NoSuchMethodException e) {
         itemsToCheck = new ItemStack[1];
-        itemsToCheck[0] = p.getInventory().getItemInHand();
+        itemsToCheck[0] = p.getInventory().getItem(p.getInventory().getHeldItemSlot());
       } catch (Exception e) {
         e.printStackTrace();
         return "error";
       }
+    } else if (wrapper.getSlot() != -1) {
+      itemsToCheck = new ItemStack[1];
+      itemsToCheck[0] = p.getInventory().getItem(wrapper.getSlot());
     } else {
+      if (wrapper.shouldCheckType() && wrapper.getType().equals("AIR")) {
+        return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
+            : PlaceholderAPIPlugin.booleanTrue();
+      }
       itemsToCheck = p.getInventory().getContents();
     }
+    
     if (amount) {
       return String.valueOf(getItemAmount(wrapper, p, itemsToCheck));
     } else {
@@ -538,6 +556,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     int total = 0;
     List<ItemStack> matched = new ArrayList<ItemStack>();
     itemsLoop: for (ItemStack toCheck : items) {
+      if (toCheck == null && wrapper.shouldCheckType() && wrapper.getType().equals("AIR")) {
+        return Integer.MAX_VALUE;
+      }
       if (toCheck != null && toCheck.getType() != Material.AIR) {
         if (wrapper.shouldCheckType() && !(wrapper.getType().equals(toCheck.getType().name()))) {
           continue;
@@ -847,6 +868,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         part = part.replace("potionupgraded:", "");
         wrapper.setCheckPotionUpgraded(true);
         wrapper.setPotionUpgraded(Boolean.parseBoolean(part));
+        continue;
+      }
+      if (part.startsWith("inslot:")) {
+        part = part.replace("inslot:", "");
+        wrapper.setSlot(getInt(PlaceholderAPI.setBracketPlaceholders(p, part)));
         continue;
       }
       if (part.equals("inhand")) {
