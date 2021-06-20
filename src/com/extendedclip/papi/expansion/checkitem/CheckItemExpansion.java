@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.2.0";
+    return "2.3.0";
   }
   
   public class ItemWrapper {
@@ -57,7 +57,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean checkCustomData;
     private boolean checkAmount;
     private boolean checkType;
-    private boolean checkHand;
+    private boolean checkMainHand;
+    private boolean checkOffHand;
     private boolean checkEnchantments;
     private boolean checkEnchanted;
     private boolean checkPotionType;
@@ -113,8 +114,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + checkAmount
           + ", checkType="
           + checkType
-          + ", checkHand="
-          + checkHand
+          + ", checkMainHand="
+          + checkMainHand
+          + ", checkOffHand="
+          + checkOffHand
           + ", checkEnchantments="
           + checkEnchantments
           + ", checkEnchanted="
@@ -334,12 +337,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return this.checkType;
     }
     
-    protected void setCheckHand(boolean checkHand) {
-      this.checkHand = checkHand;
+    protected void setCheckMainHand(boolean checkMainHand) {
+      this.checkMainHand = checkMainHand;
     }
     
-    public boolean shouldCheckHand() {
-      return this.checkHand;
+    public boolean shouldCheckMainHand() {
+      return this.checkMainHand;
+    }
+    
+    protected void setCheckOffHand(boolean checkOffHand) {
+      this.checkOffHand = checkOffHand;
+    }
+    
+    public boolean shouldCheckOffHand() {
+      return this.checkOffHand;
     }
     
     protected void setIsStrict(boolean isStrict) {
@@ -440,12 +451,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     if (wrapper == null) {
       return null;
     }
-    if (wrapper.shouldCheckHand()) {
+    if (wrapper.shouldCheckMainHand() || wrapper.shouldCheckOffHand()) {
       try {
         Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInMainHand", null);
-        itemsToCheck = new ItemStack[2];
-        itemsToCheck[0] = p.getInventory().getItem(p.getInventory().getHeldItemSlot());
-        itemsToCheck[1] = p.getInventory().getItem(40);
+        if (wrapper.shouldCheckMainHand() && wrapper.shouldCheckOffHand()) {
+          itemsToCheck = new ItemStack[2];
+          itemsToCheck[0] = (p.getInventory().getItem(p.getInventory().getHeldItemSlot()));
+          itemsToCheck[1] = (p.getInventory().getItem(40));
+        } else if (wrapper.shouldCheckMainHand()) {
+          itemsToCheck = new ItemStack[1];
+          itemsToCheck[0] = (p.getInventory().getItem(p.getInventory().getHeldItemSlot()));
+        } else {
+          itemsToCheck = new ItemStack[1];
+          itemsToCheck[0] = (p.getInventory().getItem(40));
+        }
         
       } catch (NoSuchMethodException e) {
         itemsToCheck = new ItemStack[1];
@@ -875,8 +894,18 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setSlot(getInt(PlaceholderAPI.setBracketPlaceholders(p, part)));
         continue;
       }
-      if (part.equals("inhand")) {
-        wrapper.setCheckHand(true);
+      if (part.startsWith("inhand")) {
+        if (part.startsWith("inhand:")) {
+          part = part.replace("inhand:", "");
+          if (part.equals("main"))
+            wrapper.setCheckMainHand(true);
+          else if (part.equals("off"))
+            wrapper.setCheckOffHand(true);
+        } else {
+          wrapper.setCheckMainHand(true);
+          wrapper.setCheckOffHand(true);
+        }
+        
         continue;
       }
       if (part.equals("strict")) {
