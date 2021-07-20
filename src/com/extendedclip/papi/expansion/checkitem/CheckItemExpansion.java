@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -42,7 +43,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.3.0";
+    return "2.3.1";
   }
   
   public class ItemWrapper {
@@ -701,11 +702,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     if (wrapper.shouldRemove()) {
       boolean remove = true;
       if (wrapper.shouldCheckAmount()) {
-        if (wrapper.isStrict()) {
-          remove = total == wrapper.getAmount();
-        } else {
-          remove = total >= wrapper.getAmount();
-        }
+        remove = total >= wrapper.getAmount();
+        if (remove)
+          total = wrapper.getAmount();
       }
       if (remove) {
         ItemStack[] matchedArr = new ItemStack[matched.size()];
@@ -725,9 +724,21 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
           p.getInventory().setArmorContents(armor);
+          ItemStack offhand = p.getInventory().getItemInOffHand();
+          if (matched.contains(offhand)) {
+            if (offhand.getAmount() > remaining) {
+              offhand.setAmount(offhand.getAmount() - remaining);
+              remaining = 0;
+            } else {
+              remaining -= offhand.getAmount();
+              offhand = null;
+            }
+          }
+          p.getInventory().setItemInOffHand(offhand);
           for (int i = 0; i < matched.size() && remaining > 0; i++) {
             ItemStack item = matched.get(i);
             int match = p.getInventory().first(item);
+            Bukkit.getLogger().info(match + "");
             if (match == -1) {
               break;
             }
@@ -750,6 +761,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
           p.getInventory().setArmorContents(armor);
+          ItemStack offhand = p.getInventory().getItemInOffHand();
+          if (matched.contains(offhand)) {
+            offhand = null;
+          }
+          p.getInventory().setItemInOffHand(offhand);
         }
       }
     }
