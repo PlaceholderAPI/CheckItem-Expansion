@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -43,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.3.1";
+    return "2.3.2";
   }
   
   public class ItemWrapper {
@@ -738,7 +737,6 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           for (int i = 0; i < matched.size() && remaining > 0; i++) {
             ItemStack item = matched.get(i);
             int match = p.getInventory().first(item);
-            Bukkit.getLogger().info(match + "");
             if (match == -1) {
               break;
             }
