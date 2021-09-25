@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.3.2";
+    return "2.3.3";
   }
   
   public class ItemWrapper {
@@ -859,10 +859,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             String[] ench;
             if ((ench = s.split("=")).length > 1) {
               NamespacedKey key = NamespacedKey
-                  .minecraft(PlaceholderAPI.setBracketPlaceholders(p, ench[0].toLowerCase()));
-              enchantments.put(Enchantment.getByKey(key), Integer.valueOf(ench[1]));
+                  .minecraft(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toLowerCase());
+              enchantments.put(Enchantment.getByKey(key),
+                  Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
             } else {
-              NamespacedKey key = NamespacedKey.minecraft(PlaceholderAPI.setBracketPlaceholders(p, s.toLowerCase()));
+              NamespacedKey key = NamespacedKey.minecraft(PlaceholderAPI.setBracketPlaceholders(p, s).toLowerCase());
               enchantments.put(Enchantment.getByKey(key), -1);
             }
           }
@@ -870,9 +871,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           for (String s : enchArray) {
             String[] ench;
             if ((ench = s.split("=")).length > 1) {
-              enchantments.put(Enchantment.getByName(ench[0].toUpperCase()), Integer.valueOf(ench[1]));
+              enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toUpperCase()),
+                  Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
             } else {
-              enchantments.put(Enchantment.getByName(s.toUpperCase()), -1);
+              enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, s).toUpperCase()), -1);
             }
           }
         } catch (Exception e) {
