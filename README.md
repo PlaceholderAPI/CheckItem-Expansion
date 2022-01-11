@@ -5,7 +5,7 @@
 - `%checkitem_amount_<modifier1>,<modifier2>,<...>%` - Returns amount of items the user has
 - `%checkitem_remove_<modifier1>,<modifier2>,<...>%` - Removes the items from the players inventory - Can be used with amount, it just has to be after. (Ex. `%checkitem_amount_remove_<...>%`)
 - `%checkitem_give_<modifier1>,<modifier2>,<...>%` - Gives the player an item. Returns yes if successful, returns amount of items NOT given if unsuccessful.
-- `%checkitem_getinfo:<slot>%` - Returns information about an item in a slot. Returns information in the same order listed on this wiki. List is seperated via ` &r` (Ex. `%checkitem_getinfo:0_mat:`)
+- `%checkitem_getinfo:<slot>_<modifier1>,<modifier2>,<...>%` - Returns information about an item in a slot. Returns information in the same order listed on this wiki. List is seperated via ` &r` (Ex. `%checkitem_getinfo:0_mat:`)
 
 **Modifiers:**
 - `namecontains:<string>`~
