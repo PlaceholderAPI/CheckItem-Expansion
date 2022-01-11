@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.3.3";
+    return "2.4.0";
   }
   
   public class ItemWrapper {
@@ -434,6 +434,58 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         return null;
       }
       return giveItem(wrapper, p);
+    }
+    if (args.split("_")[0].startsWith("getinfo:")) {
+      args = args.replace("getinfo:", "");
+      String[] argsSplit = args.split("_", 2);
+      int slot = 0;
+      try {
+        slot = Integer.parseInt(argsSplit[0]);
+      } catch (NumberFormatException e) {
+        return "Invalid number for slot";
+      }
+      wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', argsSplit[1]), p);
+      ItemStack item = p.getInventory().getItem(slot);
+      String data = "";
+      if ((wrapper.checkNameContains || wrapper.checkNameEquals || wrapper.checkNameStartsWith)
+          && (item.hasItemMeta() && item.getItemMeta().hasDisplayName()))
+        data += item.getItemMeta().getDisplayName() + " &r";
+      if (wrapper.checkType)
+        data += item.getType() + " &r";
+      if (wrapper.checkAmount)
+        data += item.getAmount() + " &r";
+      if (wrapper.checkDurability)
+        data += item.getDurability() + " &r";
+      if (wrapper.checkCustomData && item.hasItemMeta() && item.getItemMeta().hasCustomModelData())
+        data += item.getItemMeta().getCustomModelData() + " &r";
+      if ((wrapper.checkLoreContains || wrapper.checkLoreEquals)
+          && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
+        for (String s : item.getItemMeta().getLore()) {
+          data += s + "|";
+        }
+        data = data.substring(0, data.length() - 1) + " &r";
+      }
+      if (wrapper.checkEnchantments && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+        for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
+          data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
+        }
+        data = data.substring(0, data.length() - 1) + " &r";
+      }
+      if (wrapper.checkEnchanted && item.hasItemMeta())
+        data += item.getItemMeta().hasEnchants() + " &r";
+      if (wrapper.checkPotionType && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
+        data += potionData.getType() + " &r";
+      }
+      if (wrapper.checkPotionExtended && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
+        data += potionData.isExtended() + " &r";
+      }
+      if (wrapper.checkPotionUpgraded && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
+        data += potionData.isUpgraded() + " &r";
+      }
+      return data.substring(0, data.length() - 3);
     }
     if (args.startsWith("amount_")) {
       args = args.replace("amount_", "");
