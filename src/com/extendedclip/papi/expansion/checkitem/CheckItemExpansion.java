@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.4.0";
+    return "2.4.1";
   }
   
   public class ItemWrapper {
@@ -424,6 +424,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     ItemWrapper wrapper = new ItemWrapper();
     ItemStack[] itemsToCheck;
     boolean amount = false;
+    args = PlaceholderAPI.setBracketPlaceholders(p, args);
     if (args.startsWith("give_")) {
       if (!((boolean) get("give_enabled", true))) {
         return "Give placeholders have been disabled. Check PlaceholderAPI Config.";
