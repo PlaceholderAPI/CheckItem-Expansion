@@ -42,7 +42,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.4.1";
+    return "2.4.2";
   }
   
   public class ItemWrapper {
@@ -440,13 +440,26 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       args = args.replace("getinfo:", "");
       String[] argsSplit = args.split("_", 2);
       int slot = 0;
-      try {
-        slot = Integer.parseInt(argsSplit[0]);
-      } catch (NumberFormatException e) {
-        return "Invalid number for slot";
+      switch (argsSplit[0]) {
+        case "mainhand":
+          slot = p.getInventory().getHeldItemSlot();
+          break;
+        case "offhand":
+          slot = 40;
+          break;
+        default:
+          try {
+            slot = Integer.parseInt(argsSplit[0]);
+          } catch (NumberFormatException e) {
+            return "Invalid number for slot";
+          }
+          break;
       }
       wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', argsSplit[1]), p);
       ItemStack item = p.getInventory().getItem(slot);
+      if (item == null) {
+        return "";
+      }
       String data = "";
       if ((wrapper.checkNameContains || wrapper.checkNameEquals || wrapper.checkNameStartsWith)
           && (item.hasItemMeta() && item.getItemMeta().hasDisplayName()))

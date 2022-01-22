@@ -7,6 +7,8 @@
 - `%checkitem_give_<modifier1>,<modifier2>,<...>%` - Gives the player an item. Returns yes if successful, returns amount of items NOT given if unsuccessful.
 - `%checkitem_getinfo:<slot>_<modifier1>,<modifier2>,<...>%` - Returns information about an item in a slot. Returns information in the same order listed on this wiki. List is seperated via ` &r` (Ex. `%checkitem_getinfo:0_mat:`)
 
+*Note: `mainhand` and `offhand` work in `getinfo:<slot>`*
+
 **Modifiers:**
 - `namecontains:<string>`~
 - `namestartswith:<string>`~
