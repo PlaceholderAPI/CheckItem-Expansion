@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -24,6 +23,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import de.tr7zw.changeme.nbtapi.NBTType;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.Configurable;
@@ -507,43 +507,55 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         return "";
       }
       String data = "";
-      if ((wrapper.checkNameContains || wrapper.checkNameEquals || wrapper.checkNameStartsWith)
+      if ((wrapper.shouldCheckNameContains() || wrapper.shouldCheckNameEquals() || wrapper.shouldCheckNameStartsWith())
           && (item.hasItemMeta() && item.getItemMeta().hasDisplayName()))
         data += item.getItemMeta().getDisplayName() + " &r";
-      if (wrapper.checkType)
+      if (wrapper.shouldCheckType())
         data += item.getType() + " &r";
-      if (wrapper.checkAmount)
+      if (wrapper.shouldCheckAmount())
         data += item.getAmount() + " &r";
-      if (wrapper.checkDurability)
+      if (wrapper.shouldCheckDurability())
         data += item.getDurability() + " &r";
-      if (wrapper.checkCustomData && item.hasItemMeta() && item.getItemMeta().hasCustomModelData())
+      if (wrapper.shouldCheckCustomData() && item.hasItemMeta() && item.getItemMeta().hasCustomModelData())
         data += item.getItemMeta().getCustomModelData() + " &r";
-      if ((wrapper.checkLoreContains || wrapper.checkLoreEquals)
+      if ((wrapper.shouldCheckLoreContains() || wrapper.checkLoreEquals)
           && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
         for (String s : item.getItemMeta().getLore()) {
           data += s + "|";
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
-      if (wrapper.checkEnchantments && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+      if (wrapper.shouldCheckEnchantments() && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
         for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
           data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
-      if (wrapper.checkEnchanted && item.hasItemMeta())
+      if (wrapper.shouldCheckEnchanted() && item.hasItemMeta())
         data += item.getItemMeta().hasEnchants() + " &r";
-      if (wrapper.checkPotionType && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+      if (wrapper.shouldCheckPotionType() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.getType() + " &r";
       }
-      if (wrapper.checkPotionExtended && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+      if (wrapper.shouldCheckPotionExtended() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isExtended() + " &r";
       }
-      if (wrapper.checkPotionUpgraded && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+      if (wrapper.shouldCheckPotionUpgraded() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isUpgraded() + " &r";
+      }
+      if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
+        NBTItem nbtItem = new NBTItem(item);
+        for (String entry : nbtItem.getKeys()) {
+          if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
+            data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
+          else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
+            data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
+          else
+            data += " &r";
+        }
+        data = data.substring(0, data.length() - 1) + " &r";
       }
       return data.substring(0, data.length() - 3);
     }
@@ -644,6 +656,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
     }
     item.setItemMeta(meta);
+    if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
+      NBTItem nbtItem = new NBTItem(item);
+      if (wrapper.shouldCheckNbtStrings()) {
+        for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
+          nbtItem.setString(entry.getKey(), entry.getValue());
+        }
+      }
+      if (wrapper.shouldCheckNbtInts()) {
+        for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
+          nbtItem.setInteger(entry.getKey(), entry.getValue());
+        }
+      }
+      item = nbtItem.getItem();
+    }
     
     if (wrapper.shouldCheckAmount()) {
       int remaining = wrapper.getAmount();
@@ -803,8 +829,6 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
           if (wrapper.shouldCheckNbtInts()) {
             for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
-              Bukkit.getLogger().info(entry.getKey() + ", " + entry.getValue());
-              Bukkit.getLogger().info(nbtItem.getInteger(entry.getKey()) + "");
               if (!nbtItem.hasKey(entry.getKey())) {
                 continue itemsLoop;
               }
