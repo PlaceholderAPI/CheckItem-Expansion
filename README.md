@@ -39,4 +39,5 @@ To use commas in strings, escape them with `\` (Ex: `nameequals:This\, is a test
 **PAPI Placeholders work, you just need to put them in `{}` instead of `%%`**
 
 *Works with `give` placeholder.
-~
+
+~Works with the `getinfo` placeholder
