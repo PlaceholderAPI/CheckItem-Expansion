@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,6 +23,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.Configurable;
@@ -64,6 +66,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean checkPotionType;
     private boolean checkPotionExtended;
     private boolean checkPotionUpgraded;
+    private boolean checkNbtStrings;
+    private boolean checkNbtInts;
     private boolean isStrict;
     private boolean hdbItem;
     private boolean remove;
@@ -80,6 +84,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean potionUpgraded;
     private int hdbId;
     private int slot;
+    private Map<String, String> nbtStrings;
+    private Map<String, Integer> nbtInts;
     
     public ItemWrapper(String material, short data, int amt) {
       this.material = material.toUpperCase();
@@ -122,6 +128,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + checkEnchantments
           + ", checkEnchanted="
           + checkEnchanted
+          + ", checkNbtStrings="
+          + checkNbtStrings
+          + ", checkNbtInts="
+          + checkNbtInts
           + ", isStrict="
           + isStrict
           + ", hdbItem="
@@ -158,6 +168,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + hdbId
           + ", slot="
           + slot
+          + ", nbtStrings="
+          + nbtStrings
+          + ", nbtInts="
+          + nbtInts
           + "]";
     }
     
@@ -247,6 +261,22 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     public boolean getPotionUpgraded() {
       return this.potionUpgraded;
+    }
+    
+    public void setNbtStrings(Map<String, String> nbtStrings) {
+      this.nbtStrings = nbtStrings;
+    }
+    
+    public Map<String, String> getNbtStrings() {
+      return this.nbtStrings;
+    }
+    
+    public void setNbtInts(Map<String, Integer> nbtInts) {
+      this.nbtInts = nbtInts;
+    }
+    
+    public Map<String, Integer> getNbtInts() {
+      return this.nbtInts;
     }
     
     protected void setHdbId(int id) {
@@ -399,6 +429,22 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     public boolean shouldCheckPotionUpgraded() {
       return this.checkPotionUpgraded;
+    }
+    
+    protected void setCheckNbtStrings(boolean checkNbtStrings) {
+      this.checkNbtStrings = checkNbtStrings;
+    }
+    
+    public boolean shouldCheckNbtStrings() {
+      return this.checkNbtStrings;
+    }
+    
+    protected void setCheckNbtInts(boolean checkNbtInts) {
+      this.checkNbtInts = checkNbtInts;
+    }
+    
+    public boolean shouldCheckNbtInts() {
+      return this.checkNbtInts;
     }
     
     protected void setRemove(boolean remove) {
@@ -743,6 +789,32 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
         }
         
+        if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
+          NBTItem nbtItem = new NBTItem(toCheck);
+          if (wrapper.shouldCheckNbtStrings()) {
+            for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
+              if (!nbtItem.hasKey(entry.getKey())) {
+                continue itemsLoop;
+              }
+              if (!nbtItem.getString(entry.getKey()).equals(entry.getValue())) {
+                continue itemsLoop;
+              }
+            }
+          }
+          if (wrapper.shouldCheckNbtInts()) {
+            for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
+              Bukkit.getLogger().info(entry.getKey() + ", " + entry.getValue());
+              Bukkit.getLogger().info(nbtItem.getInteger(entry.getKey()) + "");
+              if (!nbtItem.hasKey(entry.getKey())) {
+                continue itemsLoop;
+              }
+              if (!(nbtItem.getInteger(entry.getKey()) == entry.getValue())) {
+                continue itemsLoop;
+              }
+            }
+          }
+        }
+        
         if (wrapper.isStrict() && wrapper.shouldCheckType()) {
           if (!wrapper.shouldCheckNameContains()
               && !wrapper.shouldCheckNameEquals()
@@ -969,6 +1041,39 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         part = part.replace("potionupgraded:", "");
         wrapper.setCheckPotionUpgraded(true);
         wrapper.setPotionUpgraded(Boolean.parseBoolean(part));
+        continue;
+      }
+      if (part.startsWith("nbtStrings:")) {
+        part = part.replace("nbtStrings:", "");
+        HashMap<String, String> nbtStrings = new HashMap<>();
+        String[] nbtArray = part.split(";");
+        for (String s : nbtArray) {
+          String[] nbt;
+          if ((nbt = s.split("=")).length > 1) {
+            nbtStrings.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]),
+                PlaceholderAPI.setBracketPlaceholders(p, nbt[1]));
+          }
+        }
+        wrapper.setNbtStrings(nbtStrings);
+        wrapper.setCheckNbtStrings(true);
+        continue;
+      }
+      if (part.startsWith("nbtInts:")) {
+        part = part.replace("nbtInts:", "");
+        HashMap<String, Integer> nbtInts = new HashMap<>();
+        String[] nbtArray = part.split(";");
+        for (String s : nbtArray) {
+          String[] nbt;
+          if ((nbt = s.split("=")).length > 1) {
+            try {
+              nbtInts.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]),
+                  Integer.parseInt(PlaceholderAPI.setBracketPlaceholders(p, nbt[1])));
+            } catch (NumberFormatException e) {
+            }
+          }
+        }
+        wrapper.setNbtInts(nbtInts);
+        wrapper.setCheckNbtInts(true);
         continue;
       }
       if (part.startsWith("inslot:")) {
