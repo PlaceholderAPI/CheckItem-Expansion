@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>Expansion-CheckItem</groupId>
 	<artifactId>Expansion-CheckItem</artifactId>
-	<version>2.5.0</version>
+	<version>2.5.1</version>
 	<name>Expansion-CheckItem</name>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -34,13 +34,12 @@
 					<relocations>
 						<relocation>
 							<pattern>de.tr7zw.changeme.nbtapi</pattern>
-							<shadedPattern>de.shaded.changeme.nbtapi</shadedPattern>
+							<shadedPattern>de.shaded.checkitem.nbtapi</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>
 			</plugin>
 		</plugins>
-
 		<finalName>${project.artifactId}</finalName>
 	</build>
 	<repositories>

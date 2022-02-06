@@ -44,7 +44,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.4.2";
+    return "2.5.1";
   }
   
   public class ItemWrapper {
@@ -501,52 +501,90 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
           break;
       }
-      wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', argsSplit[1]), p);
+      boolean multiMod = false;
+      if (argsSplit.length == 2) {
+        wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', argsSplit[1]), p);
+        multiMod = argsSplit[1].split(",").length > 1;
+      } else {
+        wrapper.setCheckNameContains(true);
+        wrapper.setCheckType(true);
+        wrapper.setCheckAmount(true);
+        wrapper.setCheckDurability(true);
+        wrapper.setCheckCustomData(true);
+        wrapper.setCheckLoreContains(true);
+        wrapper.setCheckEnchantments(true);
+        wrapper.setCheckEnchanted(true);
+        wrapper.setCheckPotionType(true);
+        wrapper.setCheckPotionExtended(true);
+        wrapper.setCheckPotionUpgraded(true);
+        wrapper.setCheckNbtStrings(true);
+        wrapper = getWrapper(wrapper, "", p);
+        multiMod = true;
+      }
       ItemStack item = p.getInventory().getItem(slot);
       if (item == null) {
         return "";
       }
       String data = "";
       if ((wrapper.shouldCheckNameContains() || wrapper.shouldCheckNameEquals() || wrapper.shouldCheckNameStartsWith())
-          && (item.hasItemMeta() && item.getItemMeta().hasDisplayName()))
+          && (item.hasItemMeta() && item.getItemMeta().hasDisplayName())) {
+        data = multiMod ? data += "name:" : data;
         data += item.getItemMeta().getDisplayName() + " &r";
-      if (wrapper.shouldCheckType())
+      }
+      if (wrapper.shouldCheckType()) {
+        data = multiMod ? data += "mat:" : data;
         data += item.getType() + " &r";
-      if (wrapper.shouldCheckAmount())
+      }
+      if (wrapper.shouldCheckAmount()) {
+        data = multiMod ? data += "amt:" : data;
         data += item.getAmount() + " &r";
-      if (wrapper.shouldCheckDurability())
+      }
+      if (wrapper.shouldCheckDurability()) {
+        data = multiMod ? data += "data:" : data;
         data += item.getDurability() + " &r";
-      if (wrapper.shouldCheckCustomData() && item.hasItemMeta() && item.getItemMeta().hasCustomModelData())
+      }
+      if (wrapper.shouldCheckCustomData() && item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
+        data = multiMod ? data += "custommodeldata:" : data;
         data += item.getItemMeta().getCustomModelData() + " &r";
-      if ((wrapper.shouldCheckLoreContains() || wrapper.checkLoreEquals)
+      }
+      if ((wrapper.shouldCheckLoreContains() || wrapper.shouldCheckLoreEquals())
           && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
+        data = multiMod ? data += "lore:" : data;
         for (String s : item.getItemMeta().getLore()) {
           data += s + "|";
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
       if (wrapper.shouldCheckEnchantments() && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+        data = multiMod ? data += "enchantments:" : data;
         for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
           data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
-      if (wrapper.shouldCheckEnchanted() && item.hasItemMeta())
+      if (wrapper.shouldCheckEnchanted() && item.hasItemMeta()) {
+        data = multiMod ? data += "enchanted:" : data;
         data += item.getItemMeta().hasEnchants() + " &r";
+      }
       if (wrapper.shouldCheckPotionType() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        data = multiMod ? data += "potiontype:" : data;
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.getType() + " &r";
       }
       if (wrapper.shouldCheckPotionExtended() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        data = multiMod ? data += "potionextended:" : data;
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isExtended() + " &r";
       }
       if (wrapper.shouldCheckPotionUpgraded() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
+        data = multiMod ? data += "potionupgraded:" : data;
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isUpgraded() + " &r";
       }
       if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
         NBTItem nbtItem = new NBTItem(item);
+        if (multiMod && !nbtItem.getKeys().isEmpty())
+          data += "nbt:";
         for (String entry : nbtItem.getKeys()) {
           if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
             data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
@@ -555,7 +593,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           else
             data += " &r";
         }
-        data = data.substring(0, data.length() - 1) + " &r";
+        data = data.substring(0, data.length() - 3) + " &r";
       }
       return data.substring(0, data.length() - 3);
     }
