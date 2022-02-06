@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,7 +45,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.5.1";
+    return "2.5.2";
   }
   
   public class ItemWrapper {
@@ -586,14 +587,13 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         if (multiMod && !nbtItem.getKeys().isEmpty())
           data += "nbt:";
         for (String entry : nbtItem.getKeys()) {
+          Bukkit.getLogger().info(entry);
           if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
             data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
           else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
             data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
-          else
-            data += " &r";
         }
-        data = data.substring(0, data.length() - 3) + " &r";
+        data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
       }
       return data.substring(0, data.length() - 3);
     }
@@ -1105,8 +1105,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setPotionUpgraded(Boolean.parseBoolean(part));
         continue;
       }
-      if (part.startsWith("nbtStrings:")) {
-        part = part.replace("nbtStrings:", "");
+      if (part.startsWith("nbtstrings:")) {
+        part = part.replace("nbtstrings:", "");
         HashMap<String, String> nbtStrings = new HashMap<>();
         String[] nbtArray = part.split(";");
         for (String s : nbtArray) {
@@ -1120,8 +1120,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setCheckNbtStrings(true);
         continue;
       }
-      if (part.startsWith("nbtInts:")) {
-        part = part.replace("nbtInts:", "");
+      if (part.startsWith("nbtints:")) {
+        part = part.replace("nbtints:", "");
         HashMap<String, Integer> nbtInts = new HashMap<>();
         String[] nbtArray = part.split(";");
         for (String s : nbtArray) {
