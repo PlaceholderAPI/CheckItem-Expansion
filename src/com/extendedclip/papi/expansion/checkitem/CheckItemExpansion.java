@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -587,7 +586,6 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         if (multiMod && !nbtItem.getKeys().isEmpty())
           data += "nbt:";
         for (String entry : nbtItem.getKeys()) {
-          Bukkit.getLogger().info(entry);
           if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
             data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
           else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
