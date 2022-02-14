@@ -44,7 +44,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.5.2";
+    return "2.5.4";
   }
   
   public class ItemWrapper {
@@ -593,7 +593,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         }
         data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
       }
-      return data.substring(0, data.length() - 3);
+      return data.endsWith(" &r") ? data.substring(0, data.length() - 3) : data;
     }
     if (args.startsWith("amount_")) {
       args = args.replace("amount_", "");
@@ -709,12 +709,13 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     if (wrapper.shouldCheckAmount()) {
       int remaining = wrapper.getAmount();
+      int maxStack = item.getMaxStackSize();
       while (remaining > 0) {
         HashMap<Integer, ItemStack> returned;
-        if (remaining > 64) {
-          item.setAmount(64);
+        if (remaining > maxStack) {
+          item.setAmount(maxStack);
           returned = p.getInventory().addItem(item);
-          remaining -= 64;
+          remaining -= maxStack;
         } else {
           item.setAmount(remaining);
           returned = p.getInventory().addItem(item);
