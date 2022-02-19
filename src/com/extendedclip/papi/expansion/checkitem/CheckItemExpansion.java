@@ -44,7 +44,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.5.4";
+    return "2.5.5";
   }
   
   public class ItemWrapper {
@@ -510,7 +510,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setCheckType(true);
         wrapper.setCheckAmount(true);
         wrapper.setCheckDurability(true);
-        wrapper.setCheckCustomData(true);
+        try {
+          Class.forName("org.bukkit.inventory.meta.ItemMeta").getMethod("hasCustomModelData", null);
+          wrapper.setCheckCustomData(true);
+        } catch (Exception e) {
+        }
         wrapper.setCheckLoreContains(true);
         wrapper.setCheckEnchantments(true);
         wrapper.setCheckEnchanted(true);
