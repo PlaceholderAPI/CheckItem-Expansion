@@ -44,7 +44,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.5.5";
+    return "2.5.7";
   }
   
   public class ItemWrapper {
@@ -926,17 +926,28 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
           p.getInventory().setArmorContents(armor);
-          ItemStack offhand = p.getInventory().getItemInOffHand();
-          if (matched.contains(offhand)) {
-            if (offhand.getAmount() > remaining) {
-              offhand.setAmount(offhand.getAmount() - remaining);
-              remaining = 0;
-            } else {
-              remaining -= offhand.getAmount();
-              offhand = null;
+          
+          try {
+            Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInOffHand", null);
+            
+            ItemStack offhand = p.getInventory().getItemInOffHand();
+            if (matched.contains(offhand)) {
+              if (offhand.getAmount() > remaining) {
+                offhand.setAmount(offhand.getAmount() - remaining);
+                remaining = 0;
+              } else {
+                remaining -= offhand.getAmount();
+                offhand = null;
+              }
             }
+            p.getInventory().setItemInOffHand(offhand);
+            
+          } catch (NoSuchMethodException e) {
+            
+          } catch (Exception e) {
+            e.printStackTrace();
           }
-          p.getInventory().setItemInOffHand(offhand);
+          
           for (int i = 0; i < matched.size() && remaining > 0; i++) {
             ItemStack item = matched.get(i);
             int match = p.getInventory().first(item);
@@ -962,11 +973,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
           p.getInventory().setArmorContents(armor);
-          ItemStack offhand = p.getInventory().getItemInOffHand();
-          if (matched.contains(offhand)) {
-            offhand = null;
+          try {
+            Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInOffHand", null);
+            
+            ItemStack offhand = p.getInventory().getItemInOffHand();
+            if (matched.contains(offhand)) {
+              offhand = null;
+            }
+            p.getInventory().setItemInOffHand(offhand);
+            
+          } catch (NoSuchMethodException e) {
+            
+          } catch (Exception e) {
+            e.printStackTrace();
           }
-          p.getInventory().setItemInOffHand(offhand);
         }
       }
     }
