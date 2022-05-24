@@ -22,6 +22,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
+import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import de.tr7zw.changeme.nbtapi.NBTType;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -594,6 +595,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
           else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
             data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
+          else if (nbtItem.getType(entry).equals(NBTType.NBTTagCompound)) {
+            if (!entry.equalsIgnoreCase("display"))
+              data += "NBTTagCompound:" + entry + ":" + nbtItem.getCompound(entry) + "|";
+          }
         }
         data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
       }
@@ -696,16 +701,29 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
     }
     item.setItemMeta(meta);
+    
     if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
       NBTItem nbtItem = new NBTItem(item);
       if (wrapper.shouldCheckNbtStrings()) {
         for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
-          nbtItem.setString(entry.getKey(), entry.getValue());
+          if (entry.getKey().contains("..")) {
+            String[] entrySplit = entry.getKey().split("\\.\\.");
+            nbtItem.addCompound(entrySplit[0]).setString(entrySplit[1], entry.getValue());
+          } else {
+            nbtItem.setString(entry.getKey(), entry.getValue());
+          }
         }
       }
+      
       if (wrapper.shouldCheckNbtInts()) {
         for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
-          nbtItem.setInteger(entry.getKey(), entry.getValue());
+          
+          if (entry.getKey().contains("..")) {
+            String[] entrySplit = entry.getKey().split("\\.\\.");
+            nbtItem.addCompound(entrySplit[0]).setInteger(entrySplit[1], entry.getValue());
+          } else {
+            nbtItem.setInteger(entry.getKey(), entry.getValue());
+          }
         }
       }
       item = nbtItem.getItem();
@@ -860,24 +878,45 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           NBTItem nbtItem = new NBTItem(toCheck);
           if (wrapper.shouldCheckNbtStrings()) {
             for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
-              if (!nbtItem.hasKey(entry.getKey())) {
-                continue itemsLoop;
-              }
-              if (!nbtItem.getString(entry.getKey()).equals(entry.getValue())) {
-                continue itemsLoop;
+              if (entry.getKey().contains("..")) {
+                String[] entrySplit = entry.getKey().split("\\.\\.");
+                if (nbtItem.getCompound(entrySplit[0]) == null) {
+                  continue itemsLoop;
+                }
+                if (!checkNbtValue(entrySplit[1], entry.getValue(), nbtItem.getCompound(entrySplit[0]))) {
+                  continue itemsLoop;
+                }
+              } else {
+                if (!nbtItem.hasKey(entry.getKey())) {
+                  continue itemsLoop;
+                }
+                if (!nbtItem.getString(entry.getKey()).equals(entry.getValue())) {
+                  continue itemsLoop;
+                }
               }
             }
           }
           if (wrapper.shouldCheckNbtInts()) {
             for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
-              if (!nbtItem.hasKey(entry.getKey())) {
-                continue itemsLoop;
-              }
-              if (!(nbtItem.getInteger(entry.getKey()) == entry.getValue())) {
-                continue itemsLoop;
+              if (entry.getKey().contains("..")) {
+                String[] entrySplit = entry.getKey().split("\\.\\.");
+                if (nbtItem.getCompound(entrySplit[0]) == null) {
+                  continue itemsLoop;
+                }
+                if (!checkNbtValue(entrySplit[1], entry.getValue(), nbtItem.getCompound(entrySplit[0]))) {
+                  continue itemsLoop;
+                }
+              } else {
+                if (!nbtItem.hasKey(entry.getKey())) {
+                  continue itemsLoop;
+                }
+                if (!(nbtItem.getInteger(entry.getKey()) == entry.getValue())) {
+                  continue itemsLoop;
+                }
               }
             }
           }
+          
         }
         
         if (wrapper.isStrict() && wrapper.shouldCheckType()) {
@@ -1199,5 +1238,27 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     defaults.put("give_enabled", true);
     defaults.put("remove_enabled", true);
     return defaults;
+  }
+  
+  private boolean checkNbtValue(String key, String value, NBTCompound nbtCompound) {
+    String[] keySplit = key.split("\\.\\.");
+    if (keySplit.length > 1) {
+      if (nbtCompound.getCompound(keySplit[0]) != null)
+        return checkNbtValue(keySplit[1], value, nbtCompound.getCompound(keySplit[0]));
+      return false;
+    }
+    String nbtValue = nbtCompound.getString(key);
+    return nbtValue == null ? false : nbtValue.toString().equals(value);
+  }
+  
+  private boolean checkNbtValue(String key, int value, NBTCompound nbtCompound) {
+    String[] keySplit = key.split("\\.\\.");
+    if (keySplit.length > 1) {
+      if (nbtCompound.getCompound(keySplit[0]) != null)
+        return checkNbtValue(keySplit[1], value, nbtCompound.getCompound(keySplit[0]));
+      return false;
+    }
+    Integer nbtValue = nbtCompound.getInteger(key);
+    return nbtValue == null ? false : nbtValue == value;
   }
 }
