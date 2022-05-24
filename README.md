@@ -31,6 +31,8 @@
 - `nbtstrings:<string>=<string>;<string>=<string>`*~
 - `nbtints:<string>=<integer>;<string>=<integer>`*~
 
+*For nbt data you can use compounds by putting `..` inside your string Example (`%checkitem_nbtstrings:PublicBukkitValues..executableitems:ei-id=Free_Money%`)**
+
 
 Ex: `%checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%`
 
