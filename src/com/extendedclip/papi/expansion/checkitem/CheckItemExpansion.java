@@ -45,7 +45,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.0";
+    return "2.6.1";
   }
   
   public class ItemWrapper {
