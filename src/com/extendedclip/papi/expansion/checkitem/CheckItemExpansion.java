@@ -45,7 +45,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.1";
+    return "2.6.2";
   }
   
   public class ItemWrapper {
@@ -468,6 +468,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   
   @SuppressWarnings("deprecation")
   public String onPlaceholderRequest(Player p, String args) {
+    if (p == null)
+      return "%" + getIdentifier() + "_" + args + "%";
     ItemWrapper wrapper = new ItemWrapper();
     ItemStack[] itemsToCheck;
     boolean amount = false;
@@ -1043,6 +1045,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   
   @SuppressWarnings("deprecation")
   private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
+    input = input.replaceAll("__", " ");
     String[] arrayOfString;
     int j = (arrayOfString = input.split("(?<!\\\\),")).length;
     for (int i = 0; i < j; i++) {
