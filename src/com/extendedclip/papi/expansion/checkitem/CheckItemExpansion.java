@@ -1,5 +1,6 @@
 package com.extendedclip.papi.expansion.checkitem;
 
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.2";
+    return "2.6.3";
   }
   
   public class ItemWrapper {
@@ -564,10 +565,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       if (wrapper.shouldCheckEnchantments() && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
         data = multiMod ? data += "enchantments:" : data;
-        for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
-          data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
+        if (!multiMod && wrapper.getEnchantments().size() == 1) {
+          Map<Enchantment, Integer> toCheckEnchants = item.getItemMeta().getEnchants();
+          for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
+            if (toCheckEnchants.containsKey(e.getKey())) {
+              data += toCheckEnchants.get(e.getKey());
+              break;
+            }
+          }
+        } else {
+          for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
+            data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
+          }
+          data = data.substring(0, data.length() - 1) + " &r";
         }
-        data = data.substring(0, data.length() - 1) + " &r";
       }
       if (wrapper.shouldCheckEnchanted() && item.hasItemMeta()) {
         data = multiMod ? data += "enchanted:" : data;
@@ -606,7 +617,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       return data.endsWith(" &r") ? data.substring(0, data.length() - 3) : data;
     }
-    if (args.startsWith("amount_")) {
+    if (args.startsWith("amount_"))
+    
+    {
       args = args.replace("amount_", "");
       amount = true;
     }
@@ -617,7 +630,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       wrapper.setRemove(true);
       args = args.replace("remove_", "");
     }
-    wrapper = getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
+    wrapper =
+        
+        getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
     
     if (wrapper == null) {
       return null;
@@ -1142,7 +1157,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
               enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, s).toUpperCase()), -1);
             }
           }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+          log(Level.WARNING, "Invalid Key for enchantment(s). -- Ignore if enchantment is blank on purpose");
+        
+      }catch (Exception e) {
           e.printStackTrace();
         }
         wrapper.setEnchantments(enchantments);
