@@ -1,11 +1,11 @@
 package com.extendedclip.papi.expansion.checkitem;
 
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,7 +46,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.3";
+    return "2.6.4";
   }
   
   public class ItemWrapper {
@@ -536,66 +536,83 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       String data = "";
       if ((wrapper.shouldCheckNameContains() || wrapper.shouldCheckNameEquals() || wrapper.shouldCheckNameStartsWith())
           && (item.hasItemMeta() && item.getItemMeta().hasDisplayName())) {
-        data = multiMod ? data += "name:" : data;
+        data = multiMod ? data += "name:" : "";
         data += item.getItemMeta().getDisplayName() + " &r";
       }
       if (wrapper.shouldCheckType()) {
-        data = multiMod ? data += "mat:" : data;
+        data = multiMod ? data += "mat:" : "";
         data += item.getType() + " &r";
       }
       if (wrapper.shouldCheckAmount()) {
-        data = multiMod ? data += "amt:" : data;
+        data = multiMod ? data += "amt:" : "";
         data += item.getAmount() + " &r";
       }
       if (wrapper.shouldCheckDurability()) {
-        data = multiMod ? data += "data:" : data;
+        data = multiMod ? data += "data:" : "";
         data += item.getDurability() + " &r";
       }
       if (wrapper.shouldCheckCustomData() && item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
-        data = multiMod ? data += "custommodeldata:" : data;
+        data = multiMod ? data += "custommodeldata:" : "";
         data += item.getItemMeta().getCustomModelData() + " &r";
       }
       if ((wrapper.shouldCheckLoreContains() || wrapper.shouldCheckLoreEquals())
           && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
-        data = multiMod ? data += "lore:" : data;
+        data = multiMod ? data += "lore:" : "";
         for (String s : item.getItemMeta().getLore()) {
           data += s + "|";
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
-      if (wrapper.shouldCheckEnchantments() && item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
-        data = multiMod ? data += "enchantments:" : data;
+      if (wrapper.shouldCheckEnchantments()) {
         if (!multiMod && wrapper.getEnchantments().size() == 1) {
-          Map<Enchantment, Integer> toCheckEnchants = item.getItemMeta().getEnchants();
-          for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
-            if (toCheckEnchants.containsKey(e.getKey())) {
-              data += toCheckEnchants.get(e.getKey());
-              break;
+          data = "0";
+          if ((item.hasItemMeta() && item.getItemMeta().hasEnchants())
+              || (item.hasItemMeta() && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
+            Map<Enchantment, Integer> toCheckEnchants;
+            if (item.getItemMeta() instanceof EnchantmentStorageMeta)
+              toCheckEnchants = ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants();
+            else
+              toCheckEnchants = item.getItemMeta().getEnchants();
+            for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
+              if (toCheckEnchants.containsKey(e.getKey())) {
+                data = "" + toCheckEnchants.get(e.getKey());
+                break;
+              }
             }
           }
-        } else {
-          for (Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
+        } else if ((item.hasItemMeta() && item.getItemMeta().hasEnchants())
+            || (item.hasItemMeta() && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
+          data = multiMod ? data += "enchantments:" : "";
+          Set<Entry<Enchantment, Integer>> enchantSet;
+          if (item.getItemMeta() instanceof EnchantmentStorageMeta)
+            enchantSet = ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants().entrySet();
+          else
+            enchantSet = item.getItemMeta().getEnchants().entrySet();
+          for (Entry<Enchantment, Integer> entry : enchantSet) {
             data += entry.getKey().getKey() + ":" + entry.getValue() + "|";
           }
           data = data.substring(0, data.length() - 1) + " &r";
         }
       }
       if (wrapper.shouldCheckEnchanted() && item.hasItemMeta()) {
-        data = multiMod ? data += "enchanted:" : data;
-        data += item.getItemMeta().hasEnchants() + " &r";
+        data = multiMod ? data += "enchanted:" : "";
+        data += (item.getItemMeta().hasEnchants()
+            || (item.getItemMeta() instanceof EnchantmentStorageMeta
+                && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants()))
+            + " &r";
       }
       if (wrapper.shouldCheckPotionType() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
-        data = multiMod ? data += "potiontype:" : data;
+        data = multiMod ? data += "potiontype:" : "";
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.getType() + " &r";
       }
       if (wrapper.shouldCheckPotionExtended() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
-        data = multiMod ? data += "potionextended:" : data;
+        data = multiMod ? data += "potionextended:" : "";
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isExtended() + " &r";
       }
       if (wrapper.shouldCheckPotionUpgraded() && item.hasItemMeta() && item.getItemMeta() instanceof PotionMeta) {
-        data = multiMod ? data += "potionupgraded:" : data;
+        data = multiMod ? data += "potionupgraded:" : "";
         PotionData potionData = ((PotionMeta) item.getItemMeta()).getBasePotionData();
         data += potionData.isUpgraded() + " &r";
       }
@@ -853,9 +870,15 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         }
         
         if (wrapper.shouldCheckEnchantments()) {
-          if (toCheckMeta.getEnchants().isEmpty())
+          if (toCheckMeta.getEnchants().isEmpty()
+              && (toCheckMeta instanceof EnchantmentStorageMeta
+                  && ((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants().isEmpty()))
             continue;
-          Map<Enchantment, Integer> toCheckEnchants = toCheckMeta.getEnchants();
+          Map<Enchantment, Integer> toCheckEnchants;
+          if (toCheckMeta instanceof EnchantmentStorageMeta)
+            toCheckEnchants = ((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants();
+          else
+            toCheckEnchants = toCheckMeta.getEnchants();
           for (Entry<Enchantment, Integer> e : wrapper.getEnchantments().entrySet()) {
             if (!toCheckEnchants.containsKey(e.getKey())) {
               continue itemsLoop;
@@ -957,7 +980,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         matched.add(toCheck);
       }
     }
-    if (wrapper.shouldRemove()) {
+    if (wrapper.shouldRemove())
+    
+    {
       boolean remove = true;
       if (wrapper.shouldCheckAmount()) {
         remove = total >= wrapper.getAmount();
@@ -1159,8 +1184,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
         } catch (IllegalArgumentException e) {
           log(Level.WARNING, "Invalid Key for enchantment(s). -- Ignore if enchantment is blank on purpose");
-        
-      }catch (Exception e) {
+          
+        } catch (Exception e) {
           e.printStackTrace();
         }
         wrapper.setEnchantments(enchantments);
