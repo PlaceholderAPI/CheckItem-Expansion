@@ -46,7 +46,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.5";
+    return "2.6.6";
   }
   
   public class ItemWrapper {
@@ -567,7 +567,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         if (!multiMod && wrapper.getEnchantments().size() == 1) {
           data = "0";
           if ((item.hasItemMeta() && item.getItemMeta().hasEnchants())
-              || (item.hasItemMeta() && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
+              || (item.hasItemMeta()
+                  && (item.getItemMeta() instanceof EnchantmentStorageMeta)
+                  && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
             Map<Enchantment, Integer> toCheckEnchants;
             if (item.getItemMeta() instanceof EnchantmentStorageMeta)
               toCheckEnchants = ((EnchantmentStorageMeta) item.getItemMeta()).getStoredEnchants();
