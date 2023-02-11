@@ -10,12 +10,14 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -46,7 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.6";
+    return "2.6.7";
   }
   
   public class ItemWrapper {
@@ -683,6 +685,27 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       itemsToCheck[0] = p.getInventory().getItem(wrapper.getSlot());
     } else {
       if (wrapper.shouldCheckType() && wrapper.getType().equals("AIR")) {
+        if (amount) {
+          int slots = 0;
+          PlayerInventory inv = p.getInventory();
+          for (ItemStack slot : inv.getContents()) {
+            if (slot == null)
+              slots++;
+          }
+          if (!Bukkit.getBukkitVersion().contains("1.7") && !Bukkit.getBukkitVersion().contains("1.8")) {
+            if (inv.getItemInOffHand() == null || inv.getItemInOffHand().getType() == Material.AIR)
+              slots--;
+            if (inv.getHelmet() == null)
+              slots--;
+            if (inv.getChestplate() == null)
+              slots--;
+            if (inv.getLeggings() == null)
+              slots--;
+            if (inv.getBoots() == null)
+              slots--;
+          }
+          return slots+"";
+        }
         return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
             : PlaceholderAPIPlugin.booleanTrue();
       }
