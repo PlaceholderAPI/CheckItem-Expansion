@@ -48,7 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.7";
+    return "2.6.8";
   }
   
   public class ItemWrapper {
@@ -560,8 +560,16 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       if ((wrapper.shouldCheckLoreContains() || wrapper.shouldCheckLoreEquals())
           && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
         data = multiMod ? data += "lore:" : "";
-        for (String s : item.getItemMeta().getLore()) {
-          data += s + "|";
+        int line = -1;
+        try {
+          line = Integer.parseInt(wrapper.getLore());
+        } catch (Exception e) {}
+        if(line!=-1) {
+          data += item.getItemMeta().getLore().get(line);
+        }else {
+          for (String s : item.getItemMeta().getLore()) {
+            data += s + "|";
+          }
         }
         data = data.substring(0, data.length() - 1) + " &r";
       }
