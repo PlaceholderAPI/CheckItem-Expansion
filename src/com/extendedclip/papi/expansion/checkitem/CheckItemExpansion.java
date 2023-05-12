@@ -48,7 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.6.8";
+    return "2.6.9"; //Nice
   }
   
   public class ItemWrapper {
@@ -563,15 +563,17 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         int line = -1;
         try {
           line = Integer.parseInt(wrapper.getLore());
-        } catch (Exception e) {}
-        if(line!=-1) {
+        } catch (Exception e) {
+        }
+        if (line != -1) {
           data += item.getItemMeta().getLore().get(line);
-        }else {
+        } else {
           for (String s : item.getItemMeta().getLore()) {
             data += s + "|";
           }
+          data = data.substring(0, data.length() - 1);
         }
-        data = data.substring(0, data.length() - 1) + " &r";
+        data = data + " &r";
       }
       if (wrapper.shouldCheckEnchantments()) {
         if (!multiMod && wrapper.getEnchantments().size() == 1) {
@@ -593,7 +595,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
         } else if ((item.hasItemMeta() && item.getItemMeta().hasEnchants())
-            || (item.hasItemMeta() && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
+            || (item.hasItemMeta()
+                && item.getItemMeta() instanceof EnchantmentStorageMeta
+                && ((EnchantmentStorageMeta) item.getItemMeta()).hasStoredEnchants())) {
           data = multiMod ? data += "enchantments:" : "";
           Set<Entry<Enchantment, Integer>> enchantSet;
           if (item.getItemMeta() instanceof EnchantmentStorageMeta)
@@ -630,19 +634,46 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
         NBTItem nbtItem = new NBTItem(item);
-        if (multiMod && !nbtItem.getKeys().isEmpty())
-          data += "nbt:";
-        for (String entry : nbtItem.getKeys()) {
-          if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
-            data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
-          else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
-            data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
-          else if (nbtItem.getType(entry).equals(NBTType.NBTTagCompound)) {
-            if (!entry.equalsIgnoreCase("display"))
-              data += "NBTTagCompound:" + entry + ":" + nbtItem.getCompound(entry) + "|";
+        int size = 0;
+        if (wrapper.shouldCheckNbtStrings() && wrapper.getNbtStrings() != null)
+          size += wrapper.getNbtStrings().size();
+        if (wrapper.shouldCheckNbtInts() && wrapper.getNbtInts() != null)
+          size += wrapper.getNbtInts().size();
+        if (!multiMod && size == 1) {
+          if (wrapper.shouldCheckNbtStrings()) {
+            for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
+              if (entry.getKey().contains("..")) {
+                String[] entrySplit = entry.getKey().split("\\.\\.");
+                data = nbtItem.getCompound(entrySplit[0]).getString(entrySplit[1]);
+              } else {
+                data = nbtItem.getString(entry.getKey());
+              }
+            }
+          } else {
+            for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
+              if (entry.getKey().contains("..")) {
+                String[] entrySplit = entry.getKey().split("\\.\\.");
+                data = "" + nbtItem.getCompound(entrySplit[0]).getInteger(entrySplit[1]);
+              } else {
+                data = "" + nbtItem.getInteger(entry.getKey());
+              }
+            }
           }
+          
+        } else if (!nbtItem.getKeys().isEmpty()) {
+          data += "nbt:";
+          for (String entry : nbtItem.getKeys()) {
+            if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
+              data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
+            else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
+              data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
+            else if (nbtItem.getType(entry).equals(NBTType.NBTTagCompound)) {
+              if (!entry.equalsIgnoreCase("display"))
+                data += "NBTTagCompound:" + entry + ":" + nbtItem.getCompound(entry) + "|";
+            }
+          }
+          data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
         }
-        data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
       }
       return data.endsWith(" &r") ? data.substring(0, data.length() - 3) : data;
     }
@@ -712,7 +743,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             if (inv.getBoots() == null)
               slots--;
           }
-          return slots+"";
+          return slots + "";
         }
         return p.getInventory().firstEmpty() == -1 ? PlaceholderAPIPlugin.booleanFalse()
             : PlaceholderAPIPlugin.booleanTrue();
