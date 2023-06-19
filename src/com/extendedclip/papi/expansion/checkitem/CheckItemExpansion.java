@@ -14,6 +14,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.attribute.AttributeModifier.Operation;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +27,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTItem;
@@ -65,6 +71,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean checkType;
     private boolean checkMainHand;
     private boolean checkOffHand;
+    private boolean checkAttributes;
     private boolean checkEnchantments;
     private boolean checkEnchanted;
     private boolean checkPotionType;
@@ -82,6 +89,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private String name;
     private String lore;
     private String materialString;
+    private Multimap<Attribute, AttributeModifier> attributes;
     private HashMap<Enchantment, Integer> enchantments;
     private PotionType potionType;
     private boolean potionExtended;
@@ -128,6 +136,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + checkMainHand
           + ", checkOffHand="
           + checkOffHand
+          + ", checkAttributes="
+          + checkAttributes
           + ", checkEnchantments="
           + checkEnchantments
           + ", checkEnchanted="
@@ -156,6 +166,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + lore
           + ", materialString="
           + materialString
+          + ", attributes="
+          + attributes
           + ", enchantments="
           + enchantments
           + ", potionType="
@@ -233,6 +245,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     protected void setMaterialString(String materialString) {
       this.materialString = materialString;
+    }
+    
+    protected void setAttributes(Multimap<Attribute, AttributeModifier> attributes) {
+      this.attributes = attributes;
+    }
+    
+    public Multimap<Attribute, AttributeModifier> getAttributes() {
+      return this.attributes;
     }
     
     protected void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
@@ -393,6 +413,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     public boolean isStrict() {
       return this.isStrict;
+    }
+    
+    protected void setCheckAttributes(boolean checkAttributes) {
+      this.checkAttributes = checkAttributes;
+    }
+    
+    public boolean shouldCheckAttributes() {
+      return this.checkAttributes;
     }
     
     protected void setCheckEnchantments(boolean checkEnchantments) {
@@ -933,6 +961,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
         }
         
+        if (wrapper.shouldCheckAttributes()) {
+          if (toCheckMeta.getAttributeModifiers().isEmpty())
+            continue;
+          Multimap<Attribute, AttributeModifier> toCheckAttributes = toCheckMeta.getAttributeModifiers();
+          for (Entry<Attribute, AttributeModifier> e : wrapper.getAttributes().entries()) {
+            if (!toCheckAttributes.containsKey(e.getKey())) {
+              continue itemsLoop;
+            }
+            if (!(toCheckAttributes.get(e.getKey()) == e.getValue())) {
+              continue itemsLoop;
+            }
+          }
+        }
+        
         if (wrapper.shouldCheckEnchantments()) {
           if (toCheckMeta.getEnchants().isEmpty()
               && (toCheckMeta instanceof EnchantmentStorageMeta
@@ -1216,6 +1258,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         part = part.replace("matcontains:", "");
         wrapper.setMaterialString(PlaceholderAPI.setBracketPlaceholders(p, part));
         wrapper.setCheckMaterialContains(true);
+        continue;
+      }
+      if (part.startsWith("attributes:")) {
+        part = part.replace("attributes:", "");
+        Multimap<Attribute, AttributeModifier> attributes = MultimapBuilder.hashKeys().linkedListValues().build();
+        String[] attrArray = part.split(";");
+        for (String s : attrArray) {
+          String[] attr = s.split("=");
+          attributes.put(Attribute.valueOf(PlaceholderAPI.setBracketPlaceholders(p, attr[0]).toUpperCase()),
+              new AttributeModifier("checkitem", Double.valueOf(PlaceholderAPI.setBracketPlaceholders(p, attr[1])),
+                  Operation.ADD_NUMBER));
+        }
+        wrapper.setAttributes(attributes);
+        wrapper.setCheckAttributes(true);
         continue;
       }
       if (part.startsWith("enchantments:")) {
