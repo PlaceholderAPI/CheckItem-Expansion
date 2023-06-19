@@ -48,7 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.7.0";
+    return "2.7.1";
   }
   
   public class ItemWrapper {
@@ -1345,8 +1345,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   @Override
   public Map<String, Object> getDefaults() {
     Map<String, Object> defaults = new HashMap<>();
-    defaults.put("give_enabled", true);
-    defaults.put("remove_enabled", true);
+    defaults.put("give_enabled", false);
+    defaults.put("remove_enabled", false);
     return defaults;
   }
   
