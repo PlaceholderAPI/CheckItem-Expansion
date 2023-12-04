@@ -48,7 +48,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
   }
   
   public String getVersion() {
-    return "2.7.1";
+    return "2.7.3";
   }
   
   public class ItemWrapper {
@@ -1221,7 +1221,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       if (part.startsWith("enchantments:")) {
         part = part.replace("enchantments:", "");
         HashMap<Enchantment, Integer> enchantments = new HashMap<>();
-        String[] enchArray = part.split(";");
+        String[] enchArray = part.split("(?<!\\\\);");
         try { //This try is possibly useless, mending seems to work with getByName as well, no idea how I fixed it. Issue #10
           Class.forName("org.bukkit.enchantments.Enchantment").getMethod("getByKey", NamespacedKey.class);
           for (String s : enchArray) {
@@ -1280,7 +1280,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       if (part.startsWith("nbtstrings:")) {
         part = part.replace("nbtstrings:", "");
         HashMap<String, String> nbtStrings = new HashMap<>();
-        String[] nbtArray = part.split(";");
+        String[] nbtArray = part.split("(?<!\\\\);");
         for (String s : nbtArray) {
           String[] nbt;
           if ((nbt = s.split("=")).length > 1) {
@@ -1295,7 +1295,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       if (part.startsWith("nbtints:")) {
         part = part.replace("nbtints:", "");
         HashMap<String, Integer> nbtInts = new HashMap<>();
-        String[] nbtArray = part.split(";");
+        String[] nbtArray = part.split("(?<!\\\\);");
         for (String s : nbtArray) {
           String[] nbt;
           if ((nbt = s.split("=")).length > 1) {
