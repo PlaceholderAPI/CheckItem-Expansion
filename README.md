@@ -40,6 +40,9 @@ Ex: `%checkitem_mat:STONE,amt:1,data:2,nameequals:&6Test%`
 
 To use commas in strings, escape them with `\` (Ex: `nameequals:This\, is a test`)
 
+
+To use semicolon in lists, escape them with `\` (Ex: `nbtints:ae_enchantment\;mirror=1`)
+
 **PAPI Placeholders work, you just need to put them in `{}` instead of `%%`**
 
 *Works with `give` placeholder.
