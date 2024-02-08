@@ -19,8 +19,10 @@
 - `amt:<integer>`*~
 - `data:<integer>`*~
 - `custommodeldata:<integer>`*~
+- `hasLore:`~
 - `lorecontains:<string>`~
 - `loreequals:<string>` (Separate lines with `|`)*~
+- `loreequalsmulti:<string>` (Shows lines one below another)*~
 - `matcontains:<string>`
 - `enchantments:<enchantment=lvl>;<enchantment>` (`=lvl` is optional)*~
 - `enchanted`~
