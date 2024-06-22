@@ -10,6 +10,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadableNBT;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -25,7 +27,6 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
-import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import de.tr7zw.changeme.nbtapi.NBTType;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -34,6 +35,28 @@ import me.clip.placeholderapi.expansion.Configurable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class CheckItemExpansion extends PlaceholderExpansion implements Configurable {
+
+  // Minecraft data version for components
+  private static final boolean USE_COMPONENTS;
+
+  static {
+    boolean temp = false;
+    String version = Bukkit.getServer().getBukkitVersion();
+    String[] versionParsing = version.split("\\.|-");
+    if (versionParsing.length == 5) {
+      try {
+        temp = Integer.parseInt(versionParsing[1]) > 20;
+      } catch (NumberFormatException ignored) {}
+    } else if (versionParsing.length > 5) {
+      try {
+        int major = Integer.parseInt(versionParsing[1]);
+        int minor = Integer.parseInt(versionParsing[2]);
+        temp = (major == 20 && minor >= 5) || major > 20;
+      } catch (NumberFormatException ignored) {}
+    }
+
+    USE_COMPONENTS = temp;
+  }
   
   public boolean canRegister() {
     return true;
@@ -979,7 +1002,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         }
         
         if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
-          NBTItem nbtItem = new NBTItem(toCheck);
+          ReadableNBT nbtItem;
+          if (USE_COMPONENTS) {
+            nbtItem = NBT.modifyComponents(toCheck, nbt -> {return nbt.getCompound("minecraft:custom_data");});
+            if (nbtItem == null) continue;
+          } else {
+            nbtItem = new NBTItem(toCheck);
+          }
+
           if (wrapper.shouldCheckNbtStrings()) {
             for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
               if (entry.getKey().contains("..")) {
@@ -991,7 +1021,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
                   continue itemsLoop;
                 }
               } else {
-                if (!nbtItem.hasKey(entry.getKey())) {
+                if (!nbtItem.hasTag(entry.getKey())) {
                   continue itemsLoop;
                 }
                 if (!nbtItem.getString(entry.getKey()).equals(entry.getValue())) {
@@ -1011,7 +1041,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
                   continue itemsLoop;
                 }
               } else {
-                if (!nbtItem.hasKey(entry.getKey())) {
+                if (!nbtItem.hasTag(entry.getKey())) {
                   continue itemsLoop;
                 }
                 if (!(nbtItem.getInteger(entry.getKey()) == entry.getValue())) {
@@ -1350,7 +1380,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     return defaults;
   }
   
-  private boolean checkNbtValue(String key, String value, NBTCompound nbtCompound) {
+  private boolean checkNbtValue(String key, String value, ReadableNBT nbtCompound) {
     String[] keySplit = key.split("\\.\\.");
     if (keySplit.length > 1) {
       if (nbtCompound.getCompound(keySplit[0]) != null)
@@ -1361,7 +1391,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     return nbtValue == null ? false : nbtValue.toString().equals(value);
   }
   
-  private boolean checkNbtValue(String key, int value, NBTCompound nbtCompound) {
+  private boolean checkNbtValue(String key, int value, ReadableNBT nbtCompound) {
     String[] keySplit = key.split("\\.\\.");
     if (keySplit.length > 1) {
       if (nbtCompound.getCompound(keySplit[0]) != null)
