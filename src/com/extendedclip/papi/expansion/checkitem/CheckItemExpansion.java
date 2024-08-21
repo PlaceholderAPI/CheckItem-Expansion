@@ -656,46 +656,53 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         data += potionData.isUpgraded() + " &r";
       }
       if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
-        NBTItem nbtItem = new NBTItem(item);
-        int size = 0;
-        if (wrapper.shouldCheckNbtStrings() && wrapper.getNbtStrings() != null)
-          size += wrapper.getNbtStrings().size();
-        if (wrapper.shouldCheckNbtInts() && wrapper.getNbtInts() != null)
-          size += wrapper.getNbtInts().size();
-        if (!multiMod && size == 1) {
-          if (wrapper.shouldCheckNbtStrings()) {
-            for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
-              if (entry.getKey().contains("..")) {
-                String[] entrySplit = entry.getKey().split("\\.\\.");
-                data = nbtItem.getCompound(entrySplit[0]).getString(entrySplit[1]);
-              } else {
-                data = nbtItem.getString(entry.getKey());
+        ReadableNBT nbtItem;
+        if (USE_COMPONENTS) {
+          nbtItem = NBT.modifyComponents(item, nbt -> {return nbt.getCompound("minecraft:custom_data");});
+        } else {
+          nbtItem = new NBTItem(item);
+        }
+
+        if (nbtItem != null) {
+          int size = 0;
+          if (wrapper.shouldCheckNbtStrings() && wrapper.getNbtStrings() != null)
+            size += wrapper.getNbtStrings().size();
+          if (wrapper.shouldCheckNbtInts() && wrapper.getNbtInts() != null)
+            size += wrapper.getNbtInts().size();
+          if (!multiMod && size == 1) {
+            if (wrapper.shouldCheckNbtStrings()) {
+              for (Entry<String, String> entry : wrapper.getNbtStrings().entrySet()) {
+                if (entry.getKey().contains("..")) {
+                  String[] entrySplit = entry.getKey().split("\\.\\.");
+                  data = nbtItem.getCompound(entrySplit[0]).getString(entrySplit[1]);
+                } else {
+                  data = nbtItem.getString(entry.getKey());
+                }
+              }
+            } else {
+              for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
+                if (entry.getKey().contains("..")) {
+                  String[] entrySplit = entry.getKey().split("\\.\\.");
+                  data = "" + nbtItem.getCompound(entrySplit[0]).getInteger(entrySplit[1]);
+                } else {
+                  data = "" + nbtItem.getInteger(entry.getKey());
+                }
               }
             }
-          } else {
-            for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
-              if (entry.getKey().contains("..")) {
-                String[] entrySplit = entry.getKey().split("\\.\\.");
-                data = "" + nbtItem.getCompound(entrySplit[0]).getInteger(entrySplit[1]);
-              } else {
-                data = "" + nbtItem.getInteger(entry.getKey());
+          } else if (!nbtItem.getKeys().isEmpty()) {
+            data += "nbt:";
+            for (String entry : nbtItem.getKeys()) {
+              if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
+                data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
+              else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
+                data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
+              else if (nbtItem.getType(entry).equals(NBTType.NBTTagCompound)) {
+                if (!entry.equalsIgnoreCase("display"))
+                  data += "NBTTagCompound:" + entry + ":" + nbtItem.getCompound(entry) + "|";
               }
             }
+            data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
           }
-          
-        } else if (!nbtItem.getKeys().isEmpty()) {
-          data += "nbt:";
-          for (String entry : nbtItem.getKeys()) {
-            if (nbtItem.getType(entry).equals(NBTType.NBTTagString))
-              data += "STRING:" + entry + ":" + nbtItem.getString(entry) + "|";
-            else if (nbtItem.getType(entry).equals(NBTType.NBTTagInt))
-              data += "INTEGER:" + entry + ":" + nbtItem.getInteger(entry) + "|";
-            else if (nbtItem.getType(entry).equals(NBTType.NBTTagCompound)) {
-              if (!entry.equalsIgnoreCase("display"))
-                data += "NBTTagCompound:" + entry + ":" + nbtItem.getCompound(entry) + "|";
-            }
-          }
-          data = data.endsWith("|") ? data.substring(0, data.length() - 1) + " &r" : data + " &r";
         }
       }
       return data.endsWith(" &r") ? data.substring(0, data.length() - 3) : data;
