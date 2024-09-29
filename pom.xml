@@ -8,12 +8,6 @@
 	<name>Expansion-CheckItem</name>
 	<build>
 		<finalName>${project.artifactId}</finalName>
-		<resources>
-			<resource>
-				<directory>src/com/extendedclip/papi/expansion/checkitem</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>
 			<plugin>
