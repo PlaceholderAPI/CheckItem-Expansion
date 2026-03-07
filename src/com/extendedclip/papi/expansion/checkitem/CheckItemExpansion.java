@@ -80,6 +80,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean checkNameStartsWith;
     private boolean checkNameEquals;
     private boolean checkLoreContains;
+    private boolean checkLoreDoesNotContain;
     private boolean checkLoreEquals;
     private boolean checkMaterialContains;
     private boolean checkDurability;
@@ -135,6 +136,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + checkNameEquals
           + ", checkLoreContains="
           + checkLoreContains
+          + ", checkLoreDoesNotContain="
+          + checkLoreDoesNotContain
           + ", checkLoreEquals="
           + checkLoreEquals
           + ", checkMaterialContains="
@@ -369,6 +372,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     public boolean shouldCheckLoreContains() {
       return this.checkLoreContains;
     }
+
+    protected void setCheckLoreDoesNotContain(boolean checkLoreDoesNotContain) {
+      this.checkLoreDoesNotContain = checkLoreDoesNotContain;
+    }
+    
+    public boolean shouldCheckLoreDoesNotContain() {
+      return this.checkLoreDoesNotContain;
+    }
     
     protected void setCheckLoreEquals(boolean checkLoreEquals) {
       this.checkLoreEquals = checkLoreEquals;
@@ -545,6 +556,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         } catch (Exception e) {
         }
         wrapper.setCheckLoreContains(true);
+        wrapper.setCheckLoreDoesNotContain(true);
         wrapper.setCheckEnchantments(true);
         wrapper.setCheckEnchanted(true);
         wrapper.setCheckPotionType(true);
@@ -581,6 +593,24 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         data += item.getItemMeta().getCustomModelData() + " &r";
       }
       if ((wrapper.shouldCheckLoreContains() || wrapper.shouldCheckLoreEquals())
+          && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
+        data = multiMod ? data += "lore:" : "";
+        int line = -1;
+        try {
+          line = Integer.parseInt(wrapper.getLore());
+        } catch (Exception e) {
+        }
+        if (line != -1) {
+          data += item.getItemMeta().getLore().get(line);
+        } else {
+          for (String s : item.getItemMeta().getLore()) {
+            data += s + "|";
+          }
+          data = data.substring(0, data.length() - 1);
+        }
+        data = data + " &r";
+      }
+      if ((wrapper.shouldCheckLoreDoesNotContain() || wrapper.shouldCheckLoreEquals())
           && (item.hasItemMeta() && item.getItemMeta().hasLore())) {
         data = multiMod ? data += "lore:" : "";
         int line = -1;
@@ -930,6 +960,20 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             continue;
           }
         }
+        if (wrapper.shouldCheckLoreDoesNotContain()) {
+          if (toCheckMeta.hasLore()) {
+            boolean contains = false;
+            for (String line : toCheckMeta.getLore()) {
+              if (line.contains(wrapper.getLore())) {
+                contains = true;
+                break;
+              }
+            }
+            if (contains) {
+              continue;
+            }
+          }
+        }
         if (wrapper.shouldCheckLoreEquals()) {
           if (!toCheckMeta.hasLore())
             continue;
@@ -1234,6 +1278,12 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         part = part.replace("lorecontains:", "");
         wrapper.setLore(PlaceholderAPI.setBracketPlaceholders(p, part));
         wrapper.setCheckLoreContains(true);
+        continue;
+      }
+      if (part.startsWith("loredoesnotcontain:")) {
+        part = part.replace("loredoesnotcontain:", "");
+        wrapper.setLore(PlaceholderAPI.setBracketPlaceholders(p, part));
+        wrapper.setCheckLoreDoesNotContain(true);
         continue;
       }
       if (part.startsWith("loreequals:")) {
