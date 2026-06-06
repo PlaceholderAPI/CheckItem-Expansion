@@ -43,17 +43,22 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     boolean temp = false;
     String version = Bukkit.getServer().getBukkitVersion();
     String[] versionParsing = version.split("\\.|-");
-    if (versionParsing.length == 5) {
-      try {
-        temp = Integer.parseInt(versionParsing[1]) > 20;
-      } catch (NumberFormatException ignored) {}
-    } else if (versionParsing.length > 5) {
-      try {
-        int major = Integer.parseInt(versionParsing[1]);
-        int minor = Integer.parseInt(versionParsing[2]);
-        temp = (major == 20 && minor >= 5) || major > 20;
-      } catch (NumberFormatException ignored) {}
-    }
+    try {
+      if (Integer.parseInt(versionParsing[0]) != 1) {
+        // Year-based versioning (2026+, e.g. "26.1.2"): always component-based,
+        // since the new scheme started well after components landed in 1.20.5.
+        temp = true;
+      } else {
+        // Legacy "1.x" scheme: index [1] is the generation (the "21" in 1.21.5),
+        // index [2] is the patch (may be absent, e.g. "1.21").
+        int generation = Integer.parseInt(versionParsing[1]);
+        int patch = 0;
+        try {
+          patch = Integer.parseInt(versionParsing[2]);
+        } catch (ArrayIndexOutOfBoundsException | NumberFormatException ignored) {}
+        temp = generation > 20 || (generation == 20 && patch >= 5);
+      }
+    } catch (NumberFormatException ignored) {}
 
     USE_COMPONENTS = temp;
   }
