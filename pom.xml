@@ -50,7 +50,7 @@
 		</repository>
 		<repository>
 			<id>placeholderapi</id>
-			<url> https://repo.helpch.at/</url>
+			<url>https://repo.helpch.at/</url>
 		</repository>
 		<repository>
 			<id>codemc-repo</id>
