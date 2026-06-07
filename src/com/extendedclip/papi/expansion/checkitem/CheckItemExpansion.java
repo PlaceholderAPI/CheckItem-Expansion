@@ -62,25 +62,25 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
 
     USE_COMPONENTS = temp;
   }
-  
+
   public boolean canRegister() {
     return true;
   }
-  
+
   public String getAuthor() {
     return "cj89898";
   }
-  
+
   public String getIdentifier() {
     return "checkitem";
   }
-  
+
   public String getVersion() {
     return "2.7.9";
   }
-  
+
   public class ItemWrapper {
-    
+
     private boolean checkNameContains;
     private boolean checkNameStartsWith;
     private boolean checkNameEquals;
@@ -118,18 +118,18 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private int slot;
     private Map<String, String> nbtStrings;
     private Map<String, Integer> nbtInts;
-    
+
     public ItemWrapper(String material, short data, int amt) {
       this.material = material.toUpperCase();
       this.data = data;
       this.amount = amt;
       slot = -1;
     }
-    
+
     public ItemWrapper() {
       slot = -1;
     }
-    
+
     @Override
     public String toString() {
       return "ItemWrapper [checkNameContains="
@@ -206,297 +206,297 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + nbtInts
           + "]";
     }
-    
+
     public String getType() {
       return this.material;
     }
-    
+
     protected void setType(String material) {
       this.material = material.toUpperCase();
     }
-    
+
     public short getDurability() {
       return this.data;
     }
-    
+
     protected void setDurability(short durability) {
       this.data = durability;
     }
-    
+
     public int getCustomData() {
       return this.customData;
     }
-    
+
     protected void setCustomData(int customData) {
       this.customData = customData;
     }
-    
+
     public int getAmount() {
       return this.amount;
     }
-    
+
     protected void setAmount(int amount) {
       this.amount = amount;
     }
-    
+
     public String getName() {
       return this.name;
     }
-    
+
     protected void setName(String name) {
       this.name = name;
     }
-    
+
     public String getLore() {
       return this.lore;
     }
-    
+
     protected void setLore(String lore) {
       this.lore = lore;
     }
-    
+
     public String getMaterialString() {
       return this.materialString;
     }
-    
+
     protected void setMaterialString(String materialString) {
       this.materialString = materialString;
     }
-    
+
     protected void setEnchantments(HashMap<Enchantment, Integer> enchantments) {
       this.enchantments = enchantments;
     }
-    
+
     public HashMap<Enchantment, Integer> getEnchantments() {
       return this.enchantments;
     }
-    
+
     protected void setPotionType(PotionType potionType) {
       this.potionType = potionType;
     }
-    
+
     public PotionType getPotionType() {
       return this.potionType;
     }
-    
+
     protected void setPotionExtended(boolean potionExtended) {
       this.potionExtended = potionExtended;
     }
-    
+
     public boolean getPotionExtended() {
       return this.potionExtended;
     }
-    
+
     protected void setPotionUpgraded(boolean potionUpgraded) {
       this.potionUpgraded = potionUpgraded;
     }
-    
+
     public boolean getPotionUpgraded() {
       return this.potionUpgraded;
     }
-    
+
     public void setNbtStrings(Map<String, String> nbtStrings) {
       this.nbtStrings = nbtStrings;
     }
-    
+
     public Map<String, String> getNbtStrings() {
       return this.nbtStrings;
     }
-    
+
     public void setNbtInts(Map<String, Integer> nbtInts) {
       this.nbtInts = nbtInts;
     }
-    
+
     public Map<String, Integer> getNbtInts() {
       return this.nbtInts;
     }
-    
+
     protected void setHdbId(int id) {
       this.hdbId = id;
     }
-    
+
     public int getHdbId() {
       return this.hdbId;
     }
-    
+
     protected void setCheckDurability(boolean checkDurability) {
       this.checkDurability = checkDurability;
     }
-    
+
     public boolean shouldCheckDurability() {
       return this.checkDurability;
     }
-    
+
     protected void setCheckCustomData(boolean checkCustomData) {
       this.checkCustomData = checkCustomData;
     }
-    
+
     public boolean shouldCheckCustomData() {
       return this.checkCustomData;
     }
-    
+
     protected void setCheckAmount(boolean checkAmount) {
       this.checkAmount = checkAmount;
     }
-    
+
     public boolean shouldCheckAmount() {
       return this.checkAmount;
     }
-    
+
     protected void setCheckNameContains(boolean checkNameContains) {
       this.checkNameContains = checkNameContains;
     }
-    
+
     public boolean shouldCheckNameContains() {
       return this.checkNameContains;
     }
-    
+
     protected void setCheckNameStartsWith(boolean checkNameStartsWith) {
       this.checkNameStartsWith = checkNameStartsWith;
     }
-    
+
     public boolean shouldCheckNameStartsWith() {
       return this.checkNameStartsWith;
     }
-    
+
     protected void setCheckNameEquals(boolean checkNameEquals) {
       this.checkNameEquals = checkNameEquals;
     }
-    
+
     public boolean shouldCheckNameEquals() {
       return this.checkNameEquals;
     }
-    
+
     protected void setCheckLoreContains(boolean checkLoreContains) {
       this.checkLoreContains = checkLoreContains;
     }
-    
+
     public boolean shouldCheckLoreContains() {
       return this.checkLoreContains;
     }
-    
+
     protected void setCheckLoreEquals(boolean checkLoreEquals) {
       this.checkLoreEquals = checkLoreEquals;
     }
-    
+
     public boolean shouldCheckLoreEquals() {
       return this.checkLoreEquals;
     }
-    
+
     protected void setCheckMaterialContains(boolean checkMaterialContains) {
       this.checkMaterialContains = checkMaterialContains;
     }
-    
+
     public boolean shouldCheckMaterialContains() {
       return this.checkMaterialContains;
     }
-    
+
     protected void setCheckType(boolean checkType) {
       this.checkType = checkType;
     }
-    
+
     public boolean shouldCheckType() {
       return this.checkType;
     }
-    
+
     protected void setCheckMainHand(boolean checkMainHand) {
       this.checkMainHand = checkMainHand;
     }
-    
+
     public boolean shouldCheckMainHand() {
       return this.checkMainHand;
     }
-    
+
     protected void setCheckOffHand(boolean checkOffHand) {
       this.checkOffHand = checkOffHand;
     }
-    
+
     public boolean shouldCheckOffHand() {
       return this.checkOffHand;
     }
-    
+
     protected void setIsStrict(boolean isStrict) {
       this.isStrict = isStrict;
     }
-    
+
     public boolean isStrict() {
       return this.isStrict;
     }
-    
+
     protected void setCheckEnchantments(boolean checkEnchantments) {
       this.checkEnchantments = checkEnchantments;
     }
-    
+
     public boolean shouldCheckEnchantments() {
       return this.checkEnchantments;
     }
-    
+
     protected void setCheckEnchanted(boolean checkEnchanted) {
       this.checkEnchanted = checkEnchanted;
     }
-    
+
     public boolean shouldCheckEnchanted() {
       return this.checkEnchanted;
     }
-    
+
     protected void setCheckPotionType(boolean checkPotionType) {
       this.checkPotionType = checkPotionType;
     }
-    
+
     public boolean shouldCheckPotionType() {
       return this.checkPotionType;
     }
-    
+
     protected void setCheckPotionExtended(boolean checkPotionExtended) {
       this.checkPotionExtended = checkPotionExtended;
     }
-    
+
     public boolean shouldCheckPotionExtended() {
       return this.checkPotionExtended;
     }
-    
+
     protected void setCheckPotionUpgraded(boolean checkPotionUpgraded) {
       this.checkPotionUpgraded = checkPotionUpgraded;
     }
-    
+
     public boolean shouldCheckPotionUpgraded() {
       return this.checkPotionUpgraded;
     }
-    
+
     protected void setCheckNbtStrings(boolean checkNbtStrings) {
       this.checkNbtStrings = checkNbtStrings;
     }
-    
+
     public boolean shouldCheckNbtStrings() {
       return this.checkNbtStrings;
     }
-    
+
     protected void setCheckNbtInts(boolean checkNbtInts) {
       this.checkNbtInts = checkNbtInts;
     }
-    
+
     public boolean shouldCheckNbtInts() {
       return this.checkNbtInts;
     }
-    
+
     protected void setRemove(boolean remove) {
       this.remove = remove;
     }
-    
+
     public boolean shouldRemove() {
       return remove;
     }
-    
+
     protected void setSlot(int slot) {
       this.slot = slot;
     }
-    
+
     public int getSlot() {
       return slot;
     }
-    
+
   }
-  
+
   @SuppressWarnings("deprecation")
   public String onPlaceholderRequest(Player p, String args) {
     if (p == null)
@@ -687,7 +687,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
               }
             }
           }
-          
+
         } else if (!nbtItem.getKeys().isEmpty()) {
           data += "nbt:";
           for (String entry : nbtItem.getKeys()) {
@@ -706,7 +706,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return data.endsWith(" &r") ? data.substring(0, data.length() - 3) : data;
     }
     if (args.startsWith("amount_"))
-    
+
     {
       args = args.replace("amount_", "");
       amount = true;
@@ -719,9 +719,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       args = args.replace("remove_", "");
     }
     wrapper =
-        
+
         getWrapper(wrapper, ChatColor.translateAlternateColorCodes('&', args), p);
-    
+
     if (wrapper == null) {
       return null;
     }
@@ -739,7 +739,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           itemsToCheck = new ItemStack[1];
           itemsToCheck[0] = (p.getInventory().getItem(40));
         }
-        
+
       } catch (NoSuchMethodException e) {
         itemsToCheck = new ItemStack[1];
         itemsToCheck[0] = p.getInventory().getItem(p.getInventory().getHeldItemSlot());
@@ -778,7 +778,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       itemsToCheck = p.getInventory().getContents();
     }
-    
+
     if (amount) {
       return String.valueOf(getItemAmount(wrapper, p, itemsToCheck));
     } else {
@@ -786,7 +786,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           : PlaceholderAPIPlugin.booleanFalse();
     }
   }
-  
+
   @SuppressWarnings("deprecation")
   private String giveItem(ItemWrapper wrapper, Player p) {
     ItemStack item = new ItemStack(Material.getMaterial(wrapper.getType()));
@@ -827,7 +827,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
     }
     item.setItemMeta(meta);
-    
+
     if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
       NBTItem nbtItem = new NBTItem(item);
       if (wrapper.shouldCheckNbtStrings()) {
@@ -840,10 +840,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
         }
       }
-      
+
       if (wrapper.shouldCheckNbtInts()) {
         for (Entry<String, Integer> entry : wrapper.getNbtInts().entrySet()) {
-          
+
           if (entry.getKey().contains("..")) {
             String[] entrySplit = entry.getKey().split("\\.\\.");
             nbtItem.addCompound(entrySplit[0]).setInteger(entrySplit[1], entry.getValue());
@@ -854,7 +854,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       item = nbtItem.getItem();
     }
-    
+
     if (wrapper.shouldCheckAmount()) {
       int remaining = wrapper.getAmount();
       int maxStack = item.getMaxStackSize();
@@ -880,7 +880,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     }
     return "yes";
   }
-  
+
   private boolean checkItem(ItemWrapper wrapper, Player p, ItemStack... items) {
     int total = getItemAmount(wrapper, p, items);
     if (wrapper.shouldCheckAmount()) {
@@ -889,10 +889,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       return total >= wrapper.getAmount();
     }
-    
+
     return total >= 1;
   }
-  
+
   @SuppressWarnings("deprecation")
   private int getItemAmount(ItemWrapper wrapper, Player p, ItemStack... items) {
     int total = 0;
@@ -960,7 +960,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             continue;
           }
         }
-        
+
         if (wrapper.shouldCheckEnchantments()) {
           if (toCheckMeta.getEnchants().isEmpty()
               && (toCheckMeta instanceof EnchantmentStorageMeta
@@ -980,7 +980,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
         }
-        
+
         if (wrapper.shouldCheckPotionType()
             || wrapper.shouldCheckPotionExtended()
             || wrapper.shouldCheckPotionUpgraded()) {
@@ -995,7 +995,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           if (wrapper.shouldCheckPotionUpgraded() && potionData.isUpgraded() != wrapper.getPotionUpgraded())
             continue;
         }
-        
+
         if (wrapper.shouldCheckEnchanted() && toCheckMeta.getEnchants().isEmpty()) {
           if (toCheckMeta instanceof EnchantmentStorageMeta) {
             if (((EnchantmentStorageMeta) toCheckMeta).getStoredEnchants().isEmpty()) {
@@ -1005,7 +1005,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             continue;
           }
         }
-        
+
         if (wrapper.shouldCheckNbtStrings() || wrapper.shouldCheckNbtInts()) {
           ReadableNBT nbtItem;
           if (USE_COMPONENTS) {
@@ -1055,9 +1055,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
               }
             }
           }
-          
+
         }
-        
+
         if (wrapper.isStrict() && wrapper.shouldCheckType()) {
           if (!wrapper.shouldCheckNameContains()
               && !wrapper.shouldCheckNameEquals()
@@ -1080,7 +1080,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
     }
     if (wrapper.shouldRemove())
-    
+
     {
       boolean remove = true;
       if (wrapper.shouldCheckAmount()) {
@@ -1106,10 +1106,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
             }
           }
           p.getInventory().setArmorContents(armor);
-          
+
           try {
             Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInOffHand", null);
-            
+
             ItemStack offhand = p.getInventory().getItemInOffHand();
             if (matched.contains(offhand)) {
               if (offhand.getAmount() > remaining) {
@@ -1121,13 +1121,13 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
               }
             }
             p.getInventory().setItemInOffHand(offhand);
-            
+
           } catch (NoSuchMethodException e) {
-            
+
           } catch (Exception e) {
             e.printStackTrace();
           }
-          
+
           for (int i = 0; i < matched.size() && remaining > 0; i++) {
             ItemStack item = matched.get(i);
             int match = p.getInventory().first(item);
@@ -1155,15 +1155,15 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           p.getInventory().setArmorContents(armor);
           try {
             Class.forName("org.bukkit.inventory.PlayerInventory").getMethod("getItemInOffHand", null);
-            
+
             ItemStack offhand = p.getInventory().getItemInOffHand();
             if (matched.contains(offhand)) {
               offhand = null;
             }
             p.getInventory().setItemInOffHand(offhand);
-            
+
           } catch (NoSuchMethodException e) {
-            
+
           } catch (Exception e) {
             e.printStackTrace();
           }
@@ -1171,9 +1171,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
     }
     return total;
-    
+
   }
-  
+
   private int getInt(String s) {
     try {
       return Integer.parseInt(s);
@@ -1181,7 +1181,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return -1;
     }
   }
-  
+
   @SuppressWarnings("deprecation")
   private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
     input = input.replaceAll("__", " ");
@@ -1207,6 +1207,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       }
       if (part.startsWith("mat:")) {
         part = part.replace("mat:", "");
+
+        // Used to support non-vanilla textures on a Modded server
+        part = part.toUpperCase().replaceAll("^MINECRAFT:", "").replaceAll(":|\\s", "_");
         wrapper.setType(PlaceholderAPI.setBracketPlaceholders(p, part));
         wrapper.setCheckType(true);
         continue;
@@ -1283,7 +1286,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           }
         } catch (IllegalArgumentException e) {
           log(Level.WARNING, "Invalid Key for enchantment(s). -- Ignore if enchantment is blank on purpose");
-          
+
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -1361,7 +1364,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           wrapper.setCheckMainHand(true);
           wrapper.setCheckOffHand(true);
         }
-        
+
         continue;
       }
       if (part.equals("strict")) {
@@ -1372,11 +1375,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setCheckEnchanted(true);
         continue;
       }
-      
+
     }
     return wrapper;
   }
-  
+
   @Override
   public Map<String, Object> getDefaults() {
     Map<String, Object> defaults = new HashMap<>();
@@ -1384,7 +1387,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     defaults.put("remove_enabled", false);
     return defaults;
   }
-  
+
   private boolean checkNbtValue(String key, String value, ReadableNBT nbtCompound) {
     String[] keySplit = key.split("\\.\\.");
     if (keySplit.length > 1) {
@@ -1395,7 +1398,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     String nbtValue = nbtCompound.getString(key);
     return nbtValue == null ? false : nbtValue.toString().equals(value);
   }
-  
+
   private boolean checkNbtValue(String key, int value, ReadableNBT nbtCompound) {
     String[] keySplit = key.split("\\.\\.");
     if (keySplit.length > 1) {
