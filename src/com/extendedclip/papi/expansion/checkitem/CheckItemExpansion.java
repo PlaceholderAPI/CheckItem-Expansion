@@ -1181,10 +1181,12 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       return -1;
     }
   }
-  
+
   @SuppressWarnings("deprecation")
   private ItemWrapper getWrapper(ItemWrapper wrapper, String input, Player p) {
     input = input.replaceAll("__", " ");
+    String regex = "(&#[a-fA-F0-9]{6}|&[a-fA-F0-9k-orK-OR])";
+    input = input.replaceAll(regex, "");
     String[] arrayOfString;
     int j = (arrayOfString = input.split("(?<!\\\\),")).length;
     for (int i = 0; i < j; i++) {
@@ -1257,15 +1259,13 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         part = part.replace("enchantments:", "");
         HashMap<Enchantment, Integer> enchantments = new HashMap<>();
         String[] enchArray = part.split("(?<!\\\\);");
-        try { //This try is possibly useless, mending seems to work with getByName as well, no idea how I fixed it. Issue #10
+        try {
           Class.forName("org.bukkit.enchantments.Enchantment").getMethod("getByKey", NamespacedKey.class);
           for (String s : enchArray) {
             String[] ench;
             if ((ench = s.split("=")).length > 1) {
-              NamespacedKey key = NamespacedKey
-                  .minecraft(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toLowerCase());
-              enchantments.put(Enchantment.getByKey(key),
-                  Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
+              NamespacedKey key = NamespacedKey.minecraft(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toLowerCase());
+              enchantments.put(Enchantment.getByKey(key), Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
             } else {
               NamespacedKey key = NamespacedKey.minecraft(PlaceholderAPI.setBracketPlaceholders(p, s).toLowerCase());
               enchantments.put(Enchantment.getByKey(key), -1);
@@ -1275,15 +1275,13 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           for (String s : enchArray) {
             String[] ench;
             if ((ench = s.split("=")).length > 1) {
-              enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toUpperCase()),
-                  Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
+              enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, ench[0]).toUpperCase()), Integer.valueOf(PlaceholderAPI.setBracketPlaceholders(p, ench[1])));
             } else {
               enchantments.put(Enchantment.getByName(PlaceholderAPI.setBracketPlaceholders(p, s).toUpperCase()), -1);
             }
           }
         } catch (IllegalArgumentException e) {
           log(Level.WARNING, "Invalid Key for enchantment(s). -- Ignore if enchantment is blank on purpose");
-          
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -1319,8 +1317,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         for (String s : nbtArray) {
           String[] nbt;
           if ((nbt = s.split("=")).length > 1) {
-            nbtStrings.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]),
-                PlaceholderAPI.setBracketPlaceholders(p, nbt[1]));
+            nbtStrings.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]), PlaceholderAPI.setBracketPlaceholders(p, nbt[1]));
           }
         }
         wrapper.setNbtStrings(nbtStrings);
@@ -1335,8 +1332,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           String[] nbt;
           if ((nbt = s.split("=")).length > 1) {
             try {
-              nbtInts.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]),
-                  Integer.parseInt(PlaceholderAPI.setBracketPlaceholders(p, nbt[1])));
+              nbtInts.put(PlaceholderAPI.setBracketPlaceholders(p, nbt[0]), Integer.parseInt(PlaceholderAPI.setBracketPlaceholders(p, nbt[1])));
             } catch (NumberFormatException e) {
             }
           }
@@ -1361,7 +1357,6 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           wrapper.setCheckMainHand(true);
           wrapper.setCheckOffHand(true);
         }
-        
         continue;
       }
       if (part.equals("strict")) {
@@ -1372,7 +1367,6 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setCheckEnchanted(true);
         continue;
       }
-      
     }
     return wrapper;
   }
