@@ -18,6 +18,7 @@
 - `mat:<material>`*~
 - `amt:<integer>`*~
 - `data:<integer>`*~
+- `itemmodel:<string>`*~
 - `custommodeldata:<integer>`*~
 - `lorecontains:<string>`~
 - `loreequals:<string>` (Separate lines with `|`)*~
