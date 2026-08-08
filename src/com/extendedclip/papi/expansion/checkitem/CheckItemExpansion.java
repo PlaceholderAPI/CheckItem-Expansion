@@ -88,6 +88,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean checkLoreEquals;
     private boolean checkMaterialContains;
     private boolean checkDurability;
+    private boolean checkItemModel;
     private boolean checkCustomData;
     private boolean checkAmount;
     private boolean checkType;
@@ -105,6 +106,7 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     private boolean remove;
     private String material;
     private short data;
+    private NamespacedKey itemModel;
     private int customData;
     private int amount;
     private String name;
@@ -146,6 +148,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + checkMaterialContains
           + ", checkDurability="
           + checkDurability
+          + ", checkItemModel="
+          + checkItemModel
           + ", checkCustomData="
           + checkCustomData
           + ", checkAmount="
@@ -174,6 +178,8 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           + material
           + ", data="
           + data
+          + ", itemModel="
+          + itemModel
           + ", customData="
           + customData
           + ", amount="
@@ -221,6 +227,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     protected void setDurability(short durability) {
       this.data = durability;
+    }
+
+    public NamespacedKey getItemModel() {
+      return this.itemModel;
+    }
+
+    protected void setItemModel(NamespacedKey itemModel) {
+      this.itemModel = itemModel;
     }
     
     public int getCustomData() {
@@ -325,6 +339,14 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
     
     public boolean shouldCheckDurability() {
       return this.checkDurability;
+    }
+
+    protected void setCheckItemModel(boolean checkItemModel) {
+      this.checkItemModel = checkItemModel;
+    }
+
+    public boolean shouldCheckItemModel() {
+      return this.checkItemModel;
     }
     
     protected void setCheckCustomData(boolean checkCustomData) {
@@ -545,6 +567,11 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         wrapper.setCheckAmount(true);
         wrapper.setCheckDurability(true);
         try {
+          Class.forName("org.bukkit.inventory.meta.ItemMeta").getMethod("hasItemModel", null);
+          wrapper.setCheckItemModel(true);
+        } catch (Exception e) {
+        }
+        try {
           Class.forName("org.bukkit.inventory.meta.ItemMeta").getMethod("hasCustomModelData", null);
           wrapper.setCheckCustomData(true);
         } catch (Exception e) {
@@ -580,6 +607,10 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
       if (wrapper.shouldCheckDurability()) {
         data = multiMod ? data += "data:" : "";
         data += item.getDurability() + " &r";
+      }
+      if (wrapper.shouldCheckItemModel() && item.hasItemMeta() && item.getItemMeta().hasItemModel()) {
+        data = multiMod ? data += "itemmodel:" : "";
+        data += item.getItemMeta().getItemModel() + " &r";
       }
       if (wrapper.shouldCheckCustomData() && item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
         data = multiMod ? data += "custommodeldata:" : "";
@@ -805,6 +836,9 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         return "error";
       }
     }
+    if (wrapper.shouldCheckItemModel()) {
+      meta.setItemModel(wrapper.getItemModel());
+    }
     if (wrapper.shouldCheckCustomData()) {
       meta.setCustomModelData(wrapper.getCustomData());
     }
@@ -909,6 +943,18 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
           continue;
         }
         ItemMeta toCheckMeta = toCheck.getItemMeta();
+        if (wrapper.shouldCheckItemModel()) {
+          try {
+            if (!toCheckMeta.hasItemModel())
+              continue;
+            if (wrapper.getItemModel() != toCheckMeta.getItemModel()) {
+              continue;
+            }
+          } catch (NoSuchMethodError e) {
+            PlaceholderAPIPlugin.getInstance().getLogger().log(Level.WARNING,
+                    "[CheckItem Expansion] ItemModel doesn't exist before 1.21.2!");
+          }
+        }
         if (wrapper.shouldCheckCustomData()) {
           try {
             if (!toCheckMeta.hasCustomModelData())
@@ -1198,6 +1244,12 @@ public class CheckItemExpansion extends PlaceholderExpansion implements Configur
         } catch (Exception localException1) {
           continue;
         }
+      }
+      if (part.startsWith("itemmodel:")) {
+        part = part.replace("itemmodel:", "");
+        wrapper.setItemModel(NamespacedKey.fromString(PlaceholderAPI.setBracketPlaceholders(p, part)));
+        wrapper.setCheckItemModel(true);
+        continue;
       }
       if (part.startsWith("custommodeldata:")) {
         part = part.replace("custommodeldata:", "");
